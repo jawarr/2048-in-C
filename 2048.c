@@ -1,25 +1,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
 #define BLANK 0
+#define UP 'w'
+#define DOWN 's'
+#define LEFT 'a'
+#define RIGHT 'd'
+
 
 
 void placeNewTile();
 void printBoard();
-char scanForDirection();
+char getDirection();
 
-//intialize blank board 
 int board[4][4] = {BLANK};
 
 
 int main (void) {
+    
+    puts("  _______  ________  ___   ___  ________     ");
+    puts(" /  ___  \\|\\   __  \\|\\  \\ |\\  \\|\\   __  \\    ");
+    puts("/__/|_/  /\\ \\  \\|\\  \\ \\  \\\\_\\  \\ \\  \\|\\  \\   ");
+    puts("|__|//  / /\\ \\  \\\\\\  \\ \\______  \\ \\   __  \\  ");
+    puts("    /  /_/__\\ \\  \\\\\\  \\|_____|\\  \\ \\  \\|\\  \\ ");
+    puts("   |\\________\\ \\_______\\     \\ \\__\\ \\_______\\");
+    puts("    \\|_______|\\|_______|      \\|__|\\|_______|\n\n\n");
+
+    
     srand(time(NULL));
     placeNewTile();
     placeNewTile();
     printBoard();
-    switch (scanForDirection()) {
-    case 'w':
-        printf("\nSUCCESS");
+    
+    switch (getDirection()) {
+    case UP:
+        
+        break;
+    case DOWN:
+        break;
+    case LEFT:
+        break;
+    case RIGHT:
         break;
     default:
         break;
@@ -29,10 +51,9 @@ int main (void) {
     return 0;
 }
 
+// places a new tile on one of the empty tiles.
 void placeNewTile() {
-    // place a new tile on one of the empty tiles.
     int tileVal = BLANK;
-    // int tilePosi[2] = {0};
     int emptyTiles[16][2];
     
     //generate new tile value of "2" (90% chance) or "4" (10%  chance).
@@ -57,19 +78,35 @@ void placeNewTile() {
 }
 
 void printBoard() {
-    printf("---------------------\n");
+    printf("            -----+----+----+-----\n");
     for (int i = 0; i < 4; i++)
     {
+        printf("            ");
         for (int j = 0; j < 4; j++)
         {
             printf("|%4.d", board[i][j]);
         }
-        printf("|\n---------------------\n");
+        printf("|\n            -----+----+----+-----\n");
     }
 }
 
-char scanForDirection() {
-    printf("\nSlide Direction: ");
+char getDirection() {
+    printf("\n             Slide Direction: ");
     char direction = getchar();
     return direction;
+}
+
+void moveUP() {
+    int occupiedTiles[16][2];
+    //gather all occupied tiles
+    int n = 0;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (board[i][j] != BLANK) {
+                occupiedTiles[n][0] = i;
+                occupiedTiles[n][1] = j;
+                n++;
+            }
+        }
+    }
 }
