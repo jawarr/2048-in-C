@@ -1,6 +1,6 @@
 # 2048-in-C
 
-![alt text]([https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true](https://github.com/jawarr/2048-in-C/blob/main/logo.pn))
+![alt text]((https://github.com/jawarr/2048-in-C/blob/main/logo.png))
 
 2048 clone written in C, played in the terminal
 
