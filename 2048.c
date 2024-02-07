@@ -9,7 +9,7 @@
 #define RIGHT 'd'
 #define CLEAR printf("\033[H\033[J")
 
-enum MoveType {
+enum Moves {
     STOP,
     SLIDE,
     MERGE
@@ -18,20 +18,22 @@ enum MoveType {
 void placeNewTile();
 void printBoard();
 char getDirection();
-enum MoveType moveTile(int row, int column, char direction);
+enum Moves moveTile(int row, int column, char direction);
+void moveBoard(char direction);
 void printLogo();
 
-int board[4][4] = {2, 2, BLANK};
+int board[4][4] = {BLANK};
 
 
 int main (void) {
 
     srand(time(NULL));
-    
+    placeNewTile();
+    placeNewTile();
     while (1) {
         printLogo();
         printBoard();
-        moveTile(0, 0, getDirection());
+        moveBoard(getDirection());
         // CLEAR;
     }
     
@@ -89,7 +91,7 @@ char getDirection() {
     return direction;
 }
 
-enum MoveType moveTile(int row, int column, char direction) {
+enum Moves moveTile(int row, int column, char direction) {
     //attempt to move a single tile and return its move type
     int tileVal = board[row][column];
     int nextRow = row;
@@ -113,7 +115,7 @@ enum MoveType moveTile(int row, int column, char direction) {
         nextColumn++;
         break;
     default:
-        printf("\nError: Cannot read keynboard input!\n");
+        printf("\nError: Cannot read keyboard input!\n");
         break;
     }
     int nextTileVal = board[nextRow][nextColumn];
@@ -131,7 +133,7 @@ enum MoveType moveTile(int row, int column, char direction) {
     //if the next tile is not blank and is the same value as the current tile, merge the tiles
     else if (nextTileVal == tileVal) {
         board[row][column] = BLANK;
-        board[nextRow][nextColumn] = tileVal*2;
+        board[nextRow][nextColumn] = tileVal << 1; //left shift because it's cooler than * 2
     }
 
     //if the tiles are both occupied and do not match, stop
@@ -139,6 +141,70 @@ enum MoveType moveTile(int row, int column, char direction) {
     
     //if this happens I missed something
     else printf("This is not supposed to happen.");
+}
+
+int mapTile(int row, int column) {
+    //map a tile's coordinates to a single index number
+    return (row << 2) | column;
+
+ /* This works because the highest row or column value is 3, which is two bits in binary.
+    By left-shifting two bits, there is no overlap in the column and row values,
+    which makes the bitwise OR is just the sum of the two values, 
+    which will be unique for every coordinate. */
+}
+
+void moveBoard(char direction) {
+    //move every tile on the board in a direction
+    int rowStart, columnStart, rowEnd, columnEnd, rowCounter, columnCounter;
+    
+    switch (direction) {
+    case UP:
+        rowStart = 1;
+        rowCounter = 1;
+        rowEnd = 4;
+        break;
+    case DOWN:
+        rowStart = 2;
+        rowCounter = -1;
+        rowEnd = -1;
+        break;
+    case LEFT:
+        columnStart = 1;
+        columnCounter = 1;
+        columnEnd = 4;
+        break;
+    case RIGHT:
+        columnStart = 2;
+        columnCounter = -1;
+        columnEnd = -1;
+        break;
+    default:
+        break;
+    }
+    
+    int mergedTiles[] = {0};
+    int tileIndex;
+    enum Moves moveType;
+
+    for (int k = 0; k < 3; k++) { // tiles can only move up to three times in any direction
+        for (int i = rowStart; i != rowEnd; i += rowCounter) {
+            for (int j = columnStart; j != columnEnd; j += columnCounter) {
+                tileIndex = mapTile(i, j);
+                moveType = moveTile(i, j, direction);
+                // if (moveType == MERGE) {
+                //     mergedTiles[tileIndex] = 1;
+                // }
+
+            }
+            
+
+        }
+
+
+    }
+
+
+
 }
 
 void printLogo() {
@@ -149,5 +215,4 @@ void printLogo() {
     puts("    /  /_/__\\ \\  \\\\\\  \\|_____|\\  \\ \\  \\|\\  \\ ");
     puts("   |\\________\\ \\_______\\     \\ \\__\\ \\_______\\");
     puts("    \\|_______|\\|_______|      \\|__|\\|_______|\n\n\n");
-
 }
