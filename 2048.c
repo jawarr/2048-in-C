@@ -12,13 +12,14 @@
 enum Moves {
     STOP,
     SLIDE,
-    MERGE
+    MERGE,
+    BAD // FOR ELSE ON MOVETILE
 };
 
 void placeNewTile();
 void printBoard();
 char getDirection();
-enum Moves moveTile(int row, int column, char direction);
+enum Moves moveTile(int row, int column, char direction); // changed return type
 void moveBoard(char direction);
 void printLogo();
 
@@ -26,14 +27,16 @@ int board[4][4] = {BLANK};
 
 
 int main (void) {
-
+    char direction;
     srand(time(NULL));
     placeNewTile();
     placeNewTile();
     while (1) {
         printLogo();
         printBoard();
-        moveBoard(getDirection());
+        direction = getDirection();
+        moveBoard(direction);
+        printf("direction: %c\n", direction);
         // CLEAR;
     }
     
@@ -86,21 +89,23 @@ void printBoard() {
 }
 
 char getDirection() {
+    char direction;
     printf("\n             Slide Direction: ");
-    char direction = getchar();
+    scanf(" %c", &direction); //space so it can read the value
     return direction;
 }
 
-enum Moves moveTile(int row, int column, char direction) {
+enum Moves moveTile(int row, int column, char direction) { 
     //attempt to move a single tile and return its move type
     int tileVal = board[row][column];
     int nextRow = row;
     int nextColumn = column;
-    printf("%c\n", direction);
+    int nextTileVal = board[row][column]; //JUST FOR ME
 
-    //if attempting to slide a blank tile, stop
-    if (tileVal == BLANK) return STOP;
-    
+    // if attempting to slide a blank tile, stop
+    if (tileVal == BLANK)
+        return STOP;
+
     switch (direction) {
     case UP:
         nextRow--;
@@ -118,16 +123,15 @@ enum Moves moveTile(int row, int column, char direction) {
         printf("\nError: Cannot read keyboard input!\n");
         break;
     }
-    int nextTileVal = board[nextRow][nextColumn];
 
     //if the tile is attempting to slide of the board, stop
-    if (nextRow < 0 || nextRow > 3 || nextColumn < 0 || nextColumn > 3) return STOP;
-    
+    if (nextRow >= 0 || nextRow <= 3 || nextColumn >= 0 || nextColumn <= 3) {
+        nextTileVal = board[nextRow][nextColumn]; // WORKS BETTER BECAUSE IT CHECKS THE INITIALIZATION OF NEXTTILEVAL
+    }
     //if the next tile is blank, slide current tile to next spot
     else if (nextTileVal == BLANK) {
         board[row][column] = BLANK;
         board[nextRow][nextColumn] = tileVal;
-        return SLIDE;
     }
     
     //if the next tile is not blank and is the same value as the current tile, merge the tiles
@@ -137,10 +141,10 @@ enum Moves moveTile(int row, int column, char direction) {
     }
 
     //if the tiles are both occupied and do not match, stop
-    else if (nextTileVal != BLANK && nextTileVal != tileVal) return STOP;
+    else if (nextTileVal != BLANK && nextTileVal != tileVal) return STOP;// THIS LOGIC SEEMS LIKE A PROBLEM, WHAT IF THE NEXT TILE CAN MOVE?
     
     //if this happens I missed something
-    else printf("This is not supposed to happen.");
+    else return STOP;
 }
 
 int mapTile(int row, int column) {
@@ -155,12 +159,12 @@ int mapTile(int row, int column) {
 
 void moveBoard(char direction) {
     //move every tile on the board in a direction
-    int rowStart, columnStart, rowEnd, columnEnd, rowCounter, columnCounter;
+    int rowStart=0, columnStart=0, rowEnd=3, columnEnd=3, rowCounter=1, columnCounter=1; //SET TO SPECIFIC VALUES BC SOME WERENT IF GIVEN A CERTAIN DIRECTION
     
     switch (direction) {
     case UP:
-        rowStart = 1;
-        rowCounter = 1;
+        rowStart = 1; 
+        // rowCounter = 1;
         rowEnd = 4;
         break;
     case DOWN:
@@ -170,7 +174,7 @@ void moveBoard(char direction) {
         break;
     case LEFT:
         columnStart = 1;
-        columnCounter = 1;
+        // columnCounter = 1;
         columnEnd = 4;
         break;
     case RIGHT:
@@ -187,24 +191,19 @@ void moveBoard(char direction) {
     enum Moves moveType;
 
     for (int k = 0; k < 3; k++) { // tiles can only move up to three times in any direction
-        for (int i = rowStart; i != rowEnd; i += rowCounter) {
-            for (int j = columnStart; j != columnEnd; j += columnCounter) {
+        for (int i = rowStart; i != rowEnd; i += rowCounter) { 
+            for (int j = columnStart; j != columnEnd; j += columnCounter) { 
                 tileIndex = mapTile(i, j);
                 moveType = moveTile(i, j, direction);
+                // printf("j: %d\n", j);
                 // if (moveType == MERGE) {
                 //     mergedTiles[tileIndex] = 1;
                 // }
 
             }
-            
-
+            // printf("i: %d\n", i);
         }
-
-
     }
-
-
-
 }
 
 void printLogo() {
