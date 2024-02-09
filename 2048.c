@@ -128,18 +128,19 @@ enum Moves moveTile(int row, int column, char direction) {
     if (nextRow >= 0 || nextRow <= 3 || nextColumn >= 0 || nextColumn <= 3) {
         nextTileVal = board[nextRow][nextColumn]; // WORKS BETTER BECAUSE IT CHECKS THE INITIALIZATION OF NEXTTILEVAL
     }
+
     //if the next tile is blank, slide current tile to next spot
     else if (nextTileVal == BLANK) {
+        board[nextRow][nextColumn] = board[row][column];
         board[row][column] = BLANK;
-        board[nextRow][nextColumn] = tileVal;
-    }
-    
-    //if the next tile is not blank and is the same value as the current tile, merge the tiles
-    else if (nextTileVal == tileVal) {
-        board[row][column] = BLANK;
-        board[nextRow][nextColumn] = tileVal << 1; //left shift because it's cooler than * 2
     }
 
+    //if the next tile is not blank and is the same value as the current tile, merge the tiles
+    else if (nextTileVal == tileVal) {
+        board[nextRow][nextColumn] = tileVal << 1; //left shift because it's cooler than * 2
+        board[row][column] = BLANK;
+    } //
+    
     //if the tiles are both occupied and do not match, stop
     else if (nextTileVal != BLANK && nextTileVal != tileVal) return STOP;// THIS LOGIC SEEMS LIKE A PROBLEM, WHAT IF THE NEXT TILE CAN MOVE?
     
@@ -164,23 +165,23 @@ void moveBoard(char direction) {
     switch (direction) {
     case UP:
         rowStart = 1; 
-        // rowCounter = 1;
+        rowCounter = 1;
         rowEnd = 4;
         break;
     case DOWN:
-        rowStart = 2;
+        rowStart = 3;
         rowCounter = -1;
         rowEnd = -1;
         break;
     case LEFT:
-        columnStart = 1;
-        // columnCounter = 1;
-        columnEnd = 4;
-        break;
-    case RIGHT:
-        columnStart = 2;
+        columnStart = 3;
         columnCounter = -1;
         columnEnd = -1;
+        break;
+    case RIGHT:
+        columnStart = 0;
+        columnCounter = 1;
+        columnEnd = 4;
         break;
     default:
         break;
