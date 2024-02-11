@@ -13,7 +13,6 @@ enum Moves {
     STOP,
     SLIDE,
     MERGE,
-    BAD // FOR ELSE ON MOVETILE
 };
 
 void placeNewTile();
@@ -131,7 +130,7 @@ enum Moves moveTile(int row, int column, char direction) {
 
     //if the next tile is blank, slide current tile to next spot
     else if (nextTileVal == BLANK) {
-        board[nextRow][nextColumn] = board[row][column];
+        board[nextRow][nextColumn] = board[row][column]; //IF THERE IS A VAL > 0 IN board[row][column]
         board[row][column] = BLANK;
     }
 
@@ -145,7 +144,7 @@ enum Moves moveTile(int row, int column, char direction) {
     else if (nextTileVal != BLANK && nextTileVal != tileVal) return STOP;// THIS LOGIC SEEMS LIKE A PROBLEM, WHAT IF THE NEXT TILE CAN MOVE?
     
     //if this happens I missed something
-    else return STOP;
+    else return STOP; // CHNAGED SO THE FUNCTION STOPS IF NOT WITHIN DOMAINS
 }
 
 int mapTile(int row, int column) {
