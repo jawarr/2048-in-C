@@ -13,7 +13,7 @@ Known bugs:
 
     - There is no check for win or lose condition, if the board is full with no legal moves, or a 2048 tile is created, nothing happens.
 
-    - There needs to be a way to exit the game without the Ctrl + C.
+    - (COMPLETE) There needs to be a way to exit the game without the Ctrl + C.
 
 Nice-to-haves but not necessary:
     - Keep track of score; in the original game, the score was the total value of the merged tiles, so the score only goes up when you merge tiles, and not with the randomly generated tiles.
@@ -22,7 +22,7 @@ Nice-to-haves but not necessary:
 
     - Its a little unintuitive how the new tiles are randomly placed because there is no way to animate sliding, maybe new tiles could be marked with an astrisk or similar.
 
-    - Ability to reset the board with "r".
+    - (COMPLETE) Ability to reset the board with "r".
     
     - Ability to play with both arrow keys and WASD.
 
@@ -66,8 +66,8 @@ int moveBoard(char direction);
 void printLogo();
 void resetBoard();
 
+// int board[4][4] = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, BLANK};
 int board[4][4] = {BLANK};
-
 
 int main (void) {
     char ch;
@@ -143,7 +143,48 @@ void printBoard() {
         printf("            ");
         for (int j = 0; j < 4; j++)
         {
-            printf("|%4.d", board[i][j]);
+            printf("|");
+            //ANSI color codes to color the output numbers
+            switch (board[i][j])
+            {
+            case 2:
+                printf("\033[0;30m"); //BLACK
+                break;
+            case 4:
+                printf("\033[0;31m"); //RED
+                break;
+            case 8:
+                printf("\033[0;33m"); //YELLOW
+                break;
+            case 16:
+                printf("\033[0;32m"); //GREEN
+                break;
+            case 32:
+                printf("\033[0;36m"); //CYAN
+                break;
+            case 64:
+                printf("\033[0;35m"); //PURPLE
+                break;
+            case 128:
+                printf("\033[1;31m"); //BOLD RED
+                break;
+            case 256:
+                printf("\033[1;33m"); //BOLD YELLOW
+                break;
+            case 512:
+                printf("\033[1;32m"); //BOLD GREEN
+                break;
+            case 1024:
+                printf("\033[1;36m"); //BOLD CYAN
+                break;
+            case 2048:
+                printf("\033[1;35m"); //BOLD PURPLE
+                break;
+            default:
+                break;
+            }
+            printf("%4.d", board[i][j]);
+            printf("\033[0m");
         }
         printf("|\n            -----+----+----+-----\n");
     }
@@ -158,11 +199,11 @@ char getInput() {
 
 void resetBoard() {
     // reset everything 
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            board[i][j] = BLANK;
-        }
-    }
+    // for (int i = 0; i < 4; i++) {
+    //     for (int j = 0; j < 4; j++) {
+    //         board[i][j] = BLANK;
+    //     }
+    // }
     placeNewTile();
     placeNewTile();
 }
