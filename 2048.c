@@ -9,7 +9,7 @@ Known bugs:
           [8][ ][ ][ ]
         - I think we would need to use the mapTile function and the keep track of which tiles have been merged, but i haven't figured it out yet.
     
-    - If the selected direction does not have any moves across the board, the game still places a new tile and lets you continue playing the game. It should force you to select a direction that moves the board in some way.
+    - (COMPLETE) If the selected direction does not have any moves across the board, the game still places a new tile and lets you continue playing the game. It should force you to select a direction that moves the board in some way.
 
     - There is no check for win or lose condition, if the board is full with no legal moves, or a 2048 tile is created, nothing happens.
 
@@ -49,29 +49,49 @@ enum Moves {
     STOP,
     SLIDE,
     MERGE,
+    WIN
 };
 
 void placeNewTile();
 void printBoard();
-char getDirection();
-enum Moves moveTile(int row, int column, char direction); // changed return type
-void moveBoard(char direction);
+char getInput();
+enum Moves moveTile(int row, int column, char direction);
+int moveBoard(char direction);
 void printLogo();
+void resetBoard();
 
 int board[4][4] = {BLANK};
 
 
 int main (void) {
-    char direction;
+    char ch;
+    int moved = 0;
     srand(time(NULL));
-    
-    placeNewTile();
+    resetBoard();
+   
     while (1) {
         printLogo();
-        placeNewTile();
         printBoard();
-        direction = getDirection();
-        moveBoard(direction);
+        ch = getInput();
+        switch (ch) //switch prevents undefined behavior
+        {
+        case UP:
+            moved = moveBoard(UP);
+            break;
+        case DOWN:
+            moved = moveBoard(DOWN);
+            break;
+        case LEFT:
+            moved = moveBoard(LEFT);
+            break;
+        case RIGHT:
+            moved = moveBoard(RIGHT);
+            break;
+        default:
+            break;
+        }
+
+        if (moved) placeNewTile();
         CLEAR;
     }
     return 0;
@@ -117,11 +137,22 @@ void printBoard() {
     }
 }
 
-char getDirection() {
+char getInput() {
     char direction;
-    printf("\n             Slide Direction: ");
+    printf("\n             Slide Direction:");
     scanf(" %c", &direction); //space so it can read the value
     return direction;
+}
+
+void resetBoard() {
+    // reset everything 
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            board[i][j] = BLANK;
+        }
+    }
+    placeNewTile();
+    placeNewTile();
 }
 
 enum Moves moveTile(int row, int column, char direction) { 
@@ -148,7 +179,6 @@ enum Moves moveTile(int row, int column, char direction) {
         nextColumn++;
         break;
     default:
-        printf("\nError: Cannot read keyboard input!\n");
         break;
         return STOP;
     }
@@ -189,7 +219,7 @@ int mapTile(int row, int column) {
     which will be unique for every coordinate. */
 }
 
-void moveBoard(char direction) {
+int moveBoard(char direction) {
     //move every tile on the board in a direction
     int rowStart=0, columnStart=0, rowEnd=4, columnEnd=4, rowCounter=1, columnCounter=1;
     
@@ -214,18 +244,20 @@ void moveBoard(char direction) {
         break;
     }
     
-    int mergedTiles[] = {1};
-    int tileIndex;
+    // int mergedTiles[] = {1};
+    // int tileIndex;
     enum Moves moveType;
+    int moved = 0;
 
     for (int k = 0; k < 3; k++) { // tiles can only move up to three times in any direction
         for (int i = rowStart; i != rowEnd; i += rowCounter) { 
             for (int j = columnStart; j != columnEnd; j += columnCounter) { 
-                tileIndex = mapTile(i, j);
                 moveType = moveTile(i, j, direction);
+                if (moveType == MERGE || moveType == SLIDE || moveType == WIN) moved = 1;
             }
         }
     }
+    return moved;
 }
 
 void printLogo() {
