@@ -39,11 +39,17 @@ Nice-to-haves but not necessary:
 #include <time.h>
 
 #define BLANK 0
-#define UP 'w'
-#define DOWN 's'
-#define LEFT 'a'
-#define RIGHT 'd'
 #define CLEAR printf("\033[H\033[J") // only works on linux, might have to comment out on other OS
+
+enum Inputs {
+    // ASCII codes
+    UP = 119, // w
+    DOWN = 115, // s
+    LEFT = 97, // a
+    RIGHT = 100, // d
+    RESET = 114, // r
+    EXIT = 120 // x
+};
 
 enum Moves {
     STOP,
@@ -87,6 +93,12 @@ int main (void) {
         case RIGHT:
             moved = moveBoard(RIGHT);
             break;
+        case RESET:
+            moved = 0;
+            resetBoard();
+            break;
+        case EXIT:
+            return 0;
         default:
             break;
         }
@@ -139,7 +151,7 @@ void printBoard() {
 
 char getInput() {
     char direction;
-    printf("\n             Slide Direction:");
+    printf("\n             Slide Direction: ");
     scanf(" %c", &direction); //space so it can read the value
     return direction;
 }
