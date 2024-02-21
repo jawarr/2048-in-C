@@ -1,45 +1,117 @@
+/*
+Known bugs:
+    - (COMPLETE)Tiles can merge multiple times in one move. In the original 2048 game, each tile can only merge once per move. 
+        - e.g. a row of 2s: 
+          [2][2][2][2]
+          should merge into two 4s if moved left:
+          [4][4][ ][ ]
+          currently, the game outputs one 8:
+          [8][ ][ ][ ]
+        - I think we would need to use the mapTile function and the keep track of which tiles have been merged, but i haven't figured it out yet.
+    
+    - (COMPLETE) If the selected direction does not have any moves across the board, the game still places a new tile and lets you continue playing the game. It should force you to select a direction that moves the board in some way.
+
+    - There is no check for win or lose condition, if the board is full with no legal moves, or a 2048 tile is created, nothing happens.
+
+    - (COMPLETE) There needs to be a way to exit the game without the Ctrl + C.
+
+Nice-to-haves but not necessary:
+    - Keep track of score; in the original game, the score was the total value of the merged tiles, so the score only goes up when you merge tiles, and not with the randomly generated tiles.
+
+    - Give a description of the game, rules, how to play, etc. before the game starts.
+
+    - Its a little unintuitive how the new tiles are randomly placed because there is no way to animate sliding, maybe new tiles could be marked with an astrisk or similar.
+
+    - (COMPLETE) Ability to reset the board with "r".
+    
+    - Ability to play with both arrow keys and WASD.
+
+    - Clear the screen on operating systems other than Linux. I'm pretty sure "printf("\033[H\033[J")" only works on Linux.
+
+    - Save a game/board to a file and have the ability to resume after closing the program.
+
+    - Save highscore to the same file and display in the terminal.
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 #define BLANK 0
-#define UP 'w'
-#define DOWN 's'
-#define LEFT 'a'
-#define RIGHT 'd'
-#define CLEAR printf("\033[H\033[J")
+#define CLEAR printf("\033[H\033[J") // only works on linux, might have to comment out on other OS
+
+enum Inputs {
+    // ASCII codes
+    UP = 119, // w
+    DOWN = 115, // s
+    LEFT = 97, // a
+    RIGHT = 100, // d
+    RESET = 114, // r
+    EXIT = 120 // x
+};
 
 enum Moves
 {
     STOP,
     SLIDE,
     MERGE,
+    WIN
 };
 
 void placeNewTile();
 void printBoard();
-char getDirection();
-enum Moves moveTile(int row, int column, char direction); // changed return type
-void moveBoard(char direction);
+char getInput();
+enum Moves moveTile(int row, int column, char direction, int merged);
+int moveBoard(char direction);
 void printLogo();
+void resetBoard();
 
-int board[4][4] = {BLANK};
 
-int main(void)
-{
-    char direction;
+int board[4][4] = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, BLANK};
+// int board[4][4] = {BLANK};
+
+int main (void) {
+    char ch;
+    int moved = 0;
     srand(time(NULL));
-    placeNewTile();
-    placeNewTile();
-    while (1)
-    {
+    resetBoard();
+   
+    while (1) {
         printLogo();
         printBoard();
-        direction = getDirection();
-        moveBoard(direction);
-        printf("direction: %c\n", direction);
-        // CLEAR;
+        ch = getInput();
+        switch (ch) //switch prevents undefined behavior
+        {
+        case UP:
+            moved = moveBoard(UP);
+            break;
+        case DOWN:
+            moved = moveBoard(DOWN);
+            break;
+        case LEFT:
+            moved = moveBoard(LEFT);
+            break;
+        case RIGHT:
+            moved = moveBoard(RIGHT);
+            break;
+        case RESET:
+            moved = 0;
+            resetBoard();
+            break;
+        case EXIT:
+            return 0;
+        default:
+            break;
+        }
+
+        if (moved) {
+            placeNewTile();
+        }
+        CLEAR;
     }
+
+
 
     return 0;
 }
@@ -84,27 +156,129 @@ void printBoard()
         printf("            ");
         for (int j = 0; j < 4; j++)
         {
-            printf("|%4.d", board[i][j]);
+            printf("|");
+            //ANSI color codes to color the output numbers
+            switch (board[i][j])
+            {
+            case 2:
+                printf("\033[0;30m"); //BLACK
+                break;
+            case 4:
+                printf("\033[0;31m"); //RED
+                break;
+            case 8:
+                printf("\033[0;33m"); //YELLOW
+                break;
+            case 16:
+                printf("\033[0;32m"); //GREEN
+                break;
+            case 32:
+                printf("\033[0;36m"); //CYAN
+                break;
+            case 64:
+                printf("\033[0;35m"); //PURPLE
+                break;
+            case 128:
+                printf("\033[1;31m"); //BOLD RED
+                break;
+            case 256:
+                printf("\033[1;33m"); //BOLD YELLOW
+                break;
+            case 512:
+                printf("\033[1;32m"); //BOLD GREEN
+                break;
+            case 1024:
+                printf("\033[1;36m"); //BOLD CYAN
+                break;
+            case 2048:
+                printf("\033[1;35m"); //BOLD PURPLE
+                break;
+            default:
+                break;
+            }
+            printf("%4.d", board[i][j]);
+            printf("\033[0m");
         }
         printf("|\n            -----+----+----+-----\n");
     }
 }
 
-char getDirection()
-{
-    char direction;
+// void printBoard() {
+//     for (int i = 0; i < 4; i++)
+//     {
+//         printf("            ");
+//         for (int j = 0; j < 4; j++)
+//         {
+            
+//             //ANSI escape code + RGB color codes to color the tiles
+//             switch (board[i][j])
+//             {
+//             case 2:
+//                 printf("\e[48;2;240;199;86m   2  "); 
+//                 break;
+//             case 4:
+//                 printf("\e[48;2;246;179;74m   4  ");  
+//                 break;
+//             case 8:
+//                 printf("\e[48;2;251;157;68m   8  "); 
+//                 break;
+//             case 16:
+//                 printf("\e[48;2;255;135;68m  16  ");  
+//                 break;
+//             case 32:
+//                 printf("\e[48;2;255;110;73m  32  ");  
+//                 break;
+//             case 64:
+//                 printf("\e[48;2;138;100;166m  64  ");  
+//                 break;
+//             case 128:
+//                 printf("\e[48;2;104;117;187m  128 ");  
+//                 break;
+//             case 256:
+//                 printf("\e[48;2;53;133;194m  256 "); 
+//                 break;
+//             case 512:
+//                 printf("\e[48;2;0;146;185m  512 ");  
+//                 break;
+//             case 1024:
+//                 printf("\e[48;2;0;156;164m 1024 ");  
+//                 break;
+//             case 2048:
+//                 printf("\e[48;2;0;163;136m 2048 ");  
+//                 break;
+//             default:
+//                 break;
+//             }
+//             printf("\e[0m");  //set font to default
+//         }
+//         printf("\n\n\n");
+//     }
+// }
+
+char getInput() {
     printf("\n             Slide Direction: ");
-    scanf(" %c", &direction); // space so it can read the value
+    char direction;
+    scanf(" %c", &direction); //space so it can read the value
     return direction;
 }
 
-enum Moves moveTile(int row, int column, char direction)
-{
-    // attempt to move a single tile and return its move type
+void resetBoard() {
+    // reset everything 
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            board[i][j] = BLANK;
+        }
+    }
+    placeNewTile();
+    placeNewTile();
+}
+
+enum Moves moveTile(int row, int column, char direction, int merged) { 
+    //attempt to move a single tile and return its move type
     int tileVal = board[row][column];
     int nextRow = row;
     int nextColumn = column;
-    int nextTileVal = board[row][column]; // JUST FOR ME
+
 
     // if attempting to slide a blank tile, stop
     if (tileVal == BLANK)
@@ -125,42 +299,41 @@ enum Moves moveTile(int row, int column, char direction)
         nextColumn++;
         break;
     default:
-        printf("\nError: Cannot read keyboard input!\n");
         break;
+        return STOP;
     }
 
-    // if the tile is attempting to slide of the board, stop
-    if (nextRow >= 0 || nextRow <= 3 || nextColumn >= 0 || nextColumn <= 3)
-    {
-        nextTileVal = board[nextRow][nextColumn]; // WORKS BETTER BECAUSE IT CHECKS THE INITIALIZATION OF NEXTTILEVAL
-    }
+    int nextTileVal = board[nextRow][nextColumn];
 
-    // if the next tile is blank, slide current tile to next spot
-    else if (nextTileVal == BLANK)
-    {
-        board[nextRow][nextColumn] = board[row][column]; // IF THERE IS A VAL > 0 IN board[row][column]
+    //if the tile is attempting to slide of the board, stop
+    if (nextRow < 0 || nextRow > 3 || nextColumn < 0 || nextColumn > 3) return STOP;
+    
+    //if the next tile is blank, slide current tile to next spot
+    else if (nextTileVal == BLANK) {
+
         board[row][column] = BLANK;
+        board[nextRow][nextColumn] = tileVal;
+        return SLIDE;
+    }
+    
+    //if the next tile is the same value as the current tile and has not already been merged, merge the tiles
+    else if (nextTileVal == tileVal && !merged) {
+        board[row][column] = BLANK;
+        board[nextRow][nextColumn] = tileVal << 1; //left shift because it's cooler than * 2
+        if (nextTileVal == 2048) return WIN;
+        else return MERGE;
     }
 
-    // if the next tile is not blank and is the same value as the current tile, merge the tiles
-    else if (nextTileVal == tileVal)
-    {
-        board[nextRow][nextColumn] = tileVal << 1; // left shift because it's cooler than * 2
-        board[row][column] = BLANK;
-    } //
-
-    // if the tiles are both occupied and do not match, stop
-    else if (nextTileVal != BLANK && nextTileVal != tileVal)
-        return STOP; // THIS LOGIC SEEMS LIKE A PROBLEM, WHAT IF THE NEXT TILE CAN MOVE?
-
-    // if this happens I missed something
-    else
-        return STOP; // CHNAGED SO THE FUNCTION STOPS IF NOT WITHIN DOMAINS
+    //if the tiles are both occupied and do not match, stop
+    else if (nextTileVal != BLANK && nextTileVal != tileVal) return STOP;
+    
+    //if this happens I missed something
+    else printf("This is not supposed to happen.");
 }
 
-int mapTile(int row, int column)
-{
-    // map a tile's coordinates to a single index number
+int indexTile(int row, int column) {
+    //map a tile's coordinates to a single index number
+
     return (row << 2) | column;
 
     /* This works because the highest row or column value is 3, which is two bits in binary.
@@ -169,57 +342,58 @@ int mapTile(int row, int column)
        which will be unique for every coordinate. */
 }
 
-void moveBoard(char direction)
-{
-    // move every tile on the board in a direction
-    int rowStart = 0, columnStart = 0, rowEnd = 3, columnEnd = 3, rowCounter = 1, columnCounter = 1; // SET TO SPECIFIC VALUES BC SOME WERENT IF GIVEN A CERTAIN DIRECTION
-
-    switch (direction)
-    {
+int moveBoard(char direction) {
+    //move every tile on the board in a direction
+    int rowStart=0, columnStart=0, rowEnd=4, columnEnd=4, rowCounter=1, columnCounter=1;
+    
+    switch (direction) {
     case UP:
         rowStart = 1;
-        rowCounter = 1;
-        rowEnd = 4;
+
         break;
     case DOWN:
-        rowStart = 3;
+        rowStart = 2;
         rowCounter = -1;
         rowEnd = -1;
         break;
     case LEFT:
-        columnStart = 3;
-        columnCounter = -1;
-        columnEnd = -1;
+        
         break;
     case RIGHT:
-        columnStart = 0;
-        columnCounter = 1;
-        columnEnd = 4;
+        columnStart = 2;
+        columnCounter = -1;
+        columnEnd = -1;
         break;
     default:
         break;
     }
 
-    int mergedTiles[] = {0};
+    
+    int merged[16] = {0};
     int tileIndex;
     enum Moves moveType;
+    int moved = 0;
 
-    for (int k = 0; k < 3; k++)
-    { // tiles can only move up to three times in any direction
-        for (int i = rowStart; i != rowEnd; i += rowCounter)
-        {
-            for (int j = columnStart; j != columnEnd; j += columnCounter)
-            {
-                tileIndex = mapTile(i, j);
-                moveType = moveTile(i, j, direction);
-                // printf("j: %d\n", j);
-                // if (moveType == MERGE) {
-                //     mergedTiles[tileIndex] = 1;
-                // }
+    for (int k = 0; k < 3; k++) { // tiles can only move up to three times in any direction
+        for (int i = rowStart; i != rowEnd; i += rowCounter) { 
+            for (int j = columnStart; j != columnEnd; j += columnCounter) { 
+                tileIndex = indexTile(i, j);
+                moveType = moveTile(i, j, direction, merged[tileIndex]);
+                if (moveType == WIN) moved = 1;
+                else if (moveType == MERGE) {
+                    //block tile from being moved
+                    merged[tileIndex] = 1;
+                    //block next tile as well
+                    int next_row = i + ((direction == UP || direction == DOWN) ? rowCounter * -1 : 0);
+                    int next_column = j + ((direction == RIGHT || direction == LEFT) ? columnCounter * -1 : 0);
+                    int next_tile_index = indexTile(next_row, next_column);
+                    merged[next_tile_index] = 1;
+                }
+                else if (moveType != STOP) moved = 1;
             }
-            // printf("i: %d\n", i);
         }
     }
+    return moved;
 }
 
 void printLogo()
