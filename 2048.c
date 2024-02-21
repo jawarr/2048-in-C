@@ -1,6 +1,6 @@
 /*
 Known bugs:
-    - Tiles can merge multiple times in one move. In the original 2048 game, each tile can only merge once per move. 
+    - (COMPLETE)Tiles can merge multiple times in one move. In the original 2048 game, each tile can only merge once per move. 
         - e.g. a row of 2s: 
           [2][2][2][2]
           should merge into two 4s if moved left:
@@ -61,13 +61,13 @@ enum Moves {
 void placeNewTile();
 void printBoard();
 char getInput();
-enum Moves moveTile(int row, int column, char direction);
+enum Moves moveTile(int row, int column, char direction, int merged);
 int moveBoard(char direction);
 void printLogo();
 void resetBoard();
 
-// int board[4][4] = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, BLANK};
-int board[4][4] = {BLANK};
+int board[4][4] = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, BLANK};
+// int board[4][4] = {BLANK};
 
 int main (void) {
     char ch;
@@ -103,7 +103,9 @@ int main (void) {
             break;
         }
 
-        if (moved) placeNewTile();
+        if (moved) {
+            placeNewTile();
+        }
         CLEAR;
     }
     return 0;
@@ -190,25 +192,77 @@ void printBoard() {
     }
 }
 
+// void printBoard() {
+//     for (int i = 0; i < 4; i++)
+//     {
+//         printf("            ");
+//         for (int j = 0; j < 4; j++)
+//         {
+            
+//             //ANSI escape code + RGB color codes to color the tiles
+//             switch (board[i][j])
+//             {
+//             case 2:
+//                 printf("\e[48;2;240;199;86m   2  "); 
+//                 break;
+//             case 4:
+//                 printf("\e[48;2;246;179;74m   4  ");  
+//                 break;
+//             case 8:
+//                 printf("\e[48;2;251;157;68m   8  "); 
+//                 break;
+//             case 16:
+//                 printf("\e[48;2;255;135;68m  16  ");  
+//                 break;
+//             case 32:
+//                 printf("\e[48;2;255;110;73m  32  ");  
+//                 break;
+//             case 64:
+//                 printf("\e[48;2;138;100;166m  64  ");  
+//                 break;
+//             case 128:
+//                 printf("\e[48;2;104;117;187m  128 ");  
+//                 break;
+//             case 256:
+//                 printf("\e[48;2;53;133;194m  256 "); 
+//                 break;
+//             case 512:
+//                 printf("\e[48;2;0;146;185m  512 ");  
+//                 break;
+//             case 1024:
+//                 printf("\e[48;2;0;156;164m 1024 ");  
+//                 break;
+//             case 2048:
+//                 printf("\e[48;2;0;163;136m 2048 ");  
+//                 break;
+//             default:
+//                 break;
+//             }
+//             printf("\e[0m");  //set font to default
+//         }
+//         printf("\n\n\n");
+//     }
+// }
+
 char getInput() {
-    char direction;
     printf("\n             Slide Direction: ");
+    char direction;
     scanf(" %c", &direction); //space so it can read the value
     return direction;
 }
 
 void resetBoard() {
     // reset everything 
-    // for (int i = 0; i < 4; i++) {
-    //     for (int j = 0; j < 4; j++) {
-    //         board[i][j] = BLANK;
-    //     }
-    // }
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            board[i][j] = BLANK;
+        }
+    }
     placeNewTile();
     placeNewTile();
 }
 
-enum Moves moveTile(int row, int column, char direction) { 
+enum Moves moveTile(int row, int column, char direction, int merged) { 
     //attempt to move a single tile and return its move type
     int tileVal = board[row][column];
     int nextRow = row;
@@ -249,10 +303,11 @@ enum Moves moveTile(int row, int column, char direction) {
     }
     
     //if the next tile is the same value as the current tile and has not already been merged, merge the tiles
-    else if (nextTileVal == tileVal) {
+    else if (nextTileVal == tileVal && !merged) {
         board[row][column] = BLANK;
         board[nextRow][nextColumn] = tileVal << 1; //left shift because it's cooler than * 2
-        return MERGE;
+        if (nextTileVal == 2048) return WIN;
+        else return MERGE;
     }
 
     //if the tiles are both occupied and do not match, stop
@@ -262,7 +317,7 @@ enum Moves moveTile(int row, int column, char direction) {
     else printf("This is not supposed to happen.");
 }
 
-int mapTile(int row, int column) {
+int indexTile(int row, int column) {
     //map a tile's coordinates to a single index number
     return (row << 2) | column;
 
@@ -297,16 +352,27 @@ int moveBoard(char direction) {
         break;
     }
     
-    // int mergedTiles[] = {1};
-    // int tileIndex;
+    int merged[16] = {0};
+    int tileIndex;
     enum Moves moveType;
     int moved = 0;
 
     for (int k = 0; k < 3; k++) { // tiles can only move up to three times in any direction
         for (int i = rowStart; i != rowEnd; i += rowCounter) { 
             for (int j = columnStart; j != columnEnd; j += columnCounter) { 
-                moveType = moveTile(i, j, direction);
-                if (moveType == MERGE || moveType == SLIDE || moveType == WIN) moved = 1;
+                tileIndex = indexTile(i, j);
+                moveType = moveTile(i, j, direction, merged[tileIndex]);
+                if (moveType == WIN) moved = 1;
+                else if (moveType == MERGE) {
+                    //block tile from being moved
+                    merged[tileIndex] = 1;
+                    //block next tile as well
+                    int next_row = i + ((direction == UP || direction == DOWN) ? rowCounter * -1 : 0);
+                    int next_column = j + ((direction == RIGHT || direction == LEFT) ? columnCounter * -1 : 0);
+                    int next_tile_index = indexTile(next_row, next_column);
+                    merged[next_tile_index] = 1;
+                }
+                else if (moveType != STOP) moved = 1;
             }
         }
     }
