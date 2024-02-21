@@ -19,9 +19,11 @@ enum Moves
 void placeNewTile();
 void printBoard();
 char getDirection();
-enum Moves moveTile(int row, int column, char direction); // changed return type
+enum Moves moveTile(int row, int column, char direction);
 void moveBoard(char direction);
 void printLogo();
+int checkBoard(int board[][4]);
+// void lostGame(); can use later
 
 int board[4][4] = {BLANK};
 
@@ -37,8 +39,13 @@ int main(void)
         printBoard();
         direction = getDirection();
         moveBoard(direction);
+        placeNewTile();
         printf("direction: %c\n", direction);
-        // CLEAR;
+        if (checkBoard(board) == 0){
+            printf("ya lose, good luck next time.");
+        } else if (checkBoard(board) == 2){
+            printf("good job, ya won.");
+        }
     }
 
     return 0;
@@ -132,14 +139,14 @@ enum Moves moveTile(int row, int column, char direction)
     // if the tile is attempting to slide of the board, stop
     if (nextRow < 0 || nextRow > 3 || nextColumn < 0 || nextColumn > 3)
     {
-        printf("out of bounds\n");
+        printf("out of bounds: (%d,%d)\n", row, column);
         return STOP;
     }
 
     // if the next tile is blank, slide current tile to next spot
     else if (nextTileVal == BLANK)
     {
-        printf("changed to next tile\n");
+        printf("changed to next tile: (%d,%d)\n", row, column);
         board[nextRow][nextColumn] = board[row][column]; // IF THERE IS A VAL > 0 IN board[row][column]
         board[row][column] = BLANK;
     }
@@ -147,15 +154,16 @@ enum Moves moveTile(int row, int column, char direction)
     // if the next tile is not blank and is the same value as the current tile, merge the tiles
     else if (nextTileVal == tileVal)
     {
-        printf("merged tiles\n");
+        printf("merged tiles: (%d,%d)\n", row, column);
         board[nextRow][nextColumn] = tileVal << 1; // left shift because it's cooler than * 2
         board[row][column] = BLANK;
-    } //
+        return STOP;
+    }
 
     // if the tiles are both occupied and do not match, stop
     else if (nextTileVal != BLANK && nextTileVal != tileVal)
     {
-        printf("stopped due to val in next tile\n");
+        printf("stopped due to val in next tile: (%d,%d\n", row, column);
         return STOP;
     }
     // if this happens I missed something
@@ -177,7 +185,7 @@ int mapTile(int row, int column)
 void moveBoard(char direction)
 {
     // move every tile on the board in a direction
-    int rowStart = 0, columnStart = 0, rowEnd = 3, columnEnd = 3, rowCounter = 1, columnCounter = 1; // SET TO SPECIFIC VALUES BC SOME WERENT IF GIVEN A CERTAIN DIRECTION
+    int rowStart = 0, columnStart = 0, rowEnd = 4, columnEnd = 4, rowCounter = 1, columnCounter = 1; // SET TO SPECIFIC VALUES BC SOME WERENT IF GIVEN A CERTAIN DIRECTION
 
     switch (direction)
     {
@@ -187,19 +195,19 @@ void moveBoard(char direction)
         rowEnd = 4;
         break;
     case DOWN:
-        rowStart = 3;
+        rowStart = 2;
         rowCounter = -1;
         rowEnd = -1;
         break;
     case LEFT:
-        columnStart = 3;
-        columnCounter = -1;
-        columnEnd = -1;
-        break;
-    case RIGHT:
-        columnStart = 0;
+        columnStart = 1;
         columnCounter = 1;
         columnEnd = 4;
+        break;
+    case RIGHT:
+        columnStart = 2;
+        columnCounter = -1;
+        columnEnd = -1;
         break;
     default:
         break;
@@ -217,12 +225,7 @@ void moveBoard(char direction)
             {
                 tileIndex = mapTile(i, j);
                 moveType = moveTile(i, j, direction);
-                // printf("j: %d\n", j);
-                // if (moveType == MERGE) {
-                //     mergedTiles[tileIndex] = 1;
-                // }
             }
-            // printf("i: %d\n", i);
         }
     }
 }
@@ -236,4 +239,20 @@ void printLogo()
     puts("    /  /_/__\\ \\  \\\\\\  \\|_____|\\  \\ \\  \\|\\  \\ ");
     puts("   |\\________\\ \\_______\\     \\ \\__\\ \\_______\\");
     puts("    \\|_______|\\|_______|      \\|__|\\|_______|\n\n\n");
+}
+
+int checkBoard(int board[][4])
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++){
+            if (board[i][j] == board[i][j + 1]){
+                return 1;
+            }
+            else if (board[i][j] == 2048){
+                return 2;
+            }
+        }
+    }
+    return 0;
 }
