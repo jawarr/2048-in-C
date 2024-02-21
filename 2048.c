@@ -51,7 +51,8 @@ enum Inputs {
     EXIT = 120 // x
 };
 
-enum Moves {
+enum Moves
+{
     STOP,
     SLIDE,
     MERGE,
@@ -65,6 +66,7 @@ enum Moves moveTile(int row, int column, char direction, int merged);
 int moveBoard(char direction);
 void printLogo();
 void resetBoard();
+
 
 int board[4][4] = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, BLANK};
 // int board[4][4] = {BLANK};
@@ -108,24 +110,32 @@ int main (void) {
         }
         CLEAR;
     }
+
+
+
     return 0;
 }
 
-
-void placeNewTile() {
+void placeNewTile()
+{
     // places a new tile on one of the empty tiles
     int tileVal = BLANK;
     int emptyTiles[16][2];
-    
-    //generate new tile value of "2" (90% chance) or "4" (10%  chance)
-    if (rand() % 10 == 9) tileVal = 4;
-    else tileVal = 2;
 
-    //gather all empty tiles
+    // generate new tile value of "2" (90% chance) or "4" (10%  chance)
+    if (rand() % 10 == 9)
+        tileVal = 4;
+    else
+        tileVal = 2;
+
+    // gather all empty tiles
     int n = 0;
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            if (board[i][j] == BLANK) {
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            if (board[i][j] == BLANK)
+            {
                 emptyTiles[n][0] = i;
                 emptyTiles[n][1] = j;
                 n++;
@@ -133,12 +143,13 @@ void placeNewTile() {
         }
     }
 
-    //pick a random empty tile and give it the generated value
+    // pick a random empty tile and give it the generated value
     int tilePosition = rand() % n;
     board[emptyTiles[tilePosition][0]][emptyTiles[tilePosition][1]] = tileVal;
 }
 
-void printBoard() {
+void printBoard()
+{
     printf("            -----+----+----+-----\n");
     for (int i = 0; i < 4; i++)
     {
@@ -268,11 +279,13 @@ enum Moves moveTile(int row, int column, char direction, int merged) {
     int nextRow = row;
     int nextColumn = column;
 
+
     // if attempting to slide a blank tile, stop
     if (tileVal == BLANK)
         return STOP;
 
-    switch (direction) {
+    switch (direction)
+    {
     case UP:
         nextRow--;
         break;
@@ -297,6 +310,7 @@ enum Moves moveTile(int row, int column, char direction, int merged) {
     
     //if the next tile is blank, slide current tile to next spot
     else if (nextTileVal == BLANK) {
+
         board[row][column] = BLANK;
         board[nextRow][nextColumn] = tileVal;
         return SLIDE;
@@ -319,12 +333,13 @@ enum Moves moveTile(int row, int column, char direction, int merged) {
 
 int indexTile(int row, int column) {
     //map a tile's coordinates to a single index number
+
     return (row << 2) | column;
 
- /* This works because the highest row or column value is 3, which is two bits in binary.
-    By left-shifting two bits, there is no overlap in the column and row values,
-    which makes the bitwise OR is just the sum of the two values, 
-    which will be unique for every coordinate. */
+    /* This works because the highest row or column value is 3, which is two bits in binary.
+       By left-shifting two bits, there is no overlap in the column and row values,
+       which makes the bitwise OR is just the sum of the two values,
+       which will be unique for every coordinate. */
 }
 
 int moveBoard(char direction) {
@@ -334,6 +349,7 @@ int moveBoard(char direction) {
     switch (direction) {
     case UP:
         rowStart = 1;
+
         break;
     case DOWN:
         rowStart = 2;
@@ -351,6 +367,7 @@ int moveBoard(char direction) {
     default:
         break;
     }
+
     
     int merged[16] = {0};
     int tileIndex;
@@ -379,7 +396,8 @@ int moveBoard(char direction) {
     return moved;
 }
 
-void printLogo() {
+void printLogo()
+{
     puts("\n  _______  ________  ___   ___  ________     ");
     puts(" /  ___  \\|\\   __  \\|\\  \\ |\\  \\|\\   __  \\    ");
     puts("/__/|_/  /\\ \\  \\|\\  \\ \\  \\\\_\\  \\ \\  \\|\\  \\   ");
