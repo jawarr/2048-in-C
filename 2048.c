@@ -11,7 +11,7 @@ Known bugs:
     
     - (COMPLETE) If the selected direction does not have any moves across the board, the game still places a new tile and lets you continue playing the game. It should force you to select a direction that moves the board in some way.
 
-    - There is no check for win or lose condition, if the board is full with no legal moves, or a 2048 tile is created, nothing happens.
+    - (COMPLETE) There is no check for win or lose condition, if the board is full with no legal moves, or a 2048 tile is created, nothing happens.
 
     - (COMPLETE) There needs to be a way to exit the game without the Ctrl + C.
 
@@ -68,15 +68,16 @@ enum Moves moveTile(int row, int column, char direction, int merged);
 int moveBoard(char direction);
 void printLogo();
 void resetBoard();
-void checkBoard();
+void checkWin();
+void checkLoss();
 void win();
 void lose();
 
 
 
-// int board[4][4] = {BLANK};
-int board[4][4] = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 32, 8, 16, 32, BLANK}; //lose condition board
-// int board[4][4] = {1024, 0, 0, 0, 1024, BLANK}; // win condition board
+int board[4][4] = {BLANK};
+// int board[4][4] = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 32, 8, 16, 32, BLANK}; //lose condition test board
+// int board[4][4] = {1024, 0, 0, 0, 1024, BLANK}; // win condition test board
 
 int score = 0;
 int won = 0;
@@ -86,7 +87,7 @@ int main (void) {
     char ch;
     int moved = 0;
     srand(time(NULL));
-    // resetBoard();
+    resetBoard();
    
     while (1) {                                 
         CLEAR;
@@ -120,7 +121,9 @@ int main (void) {
         if (moved) {
             placeNewTile();
         }
-        checkBoard();
+
+        checkWin();
+        checkLoss();
 
         if (won || lost) break;
     }
@@ -366,22 +369,29 @@ int moveBoard(char direction) {
 
 
 
-void checkBoard() {
+void checkWin() {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            printf("%d\n", board[i][j]);
             if (board[i][j] == 2048) {
                 won = 1;
                 return;
             }
+        }
+    }
+}
+
+void checkLoss() {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
             if ((board[i][j] == BLANK) ||
                 (i != 3 && board[i][j] == board[i + 1][j]) || 
-                (j != 3 && board[i][j] == board[i][j + 1])) 
+                (j != 3 && board[i][j] == board[i][j + 1]))
                 return;
         }
     }
     lost = 1;
 }
+
 
 void printLogo()
 {
@@ -396,7 +406,7 @@ void printLogo()
 
 void lose() {
     CLEAR;
-    printf("\033[0;31m"); //RED
+    printf("\033[0;91m"); //RED
     puts("\n ___       ________  ________  _________  ___");       
     puts("|\\  \\     |\\   __  \\|\\   ____\\|\\___   ___\\\\  \\");      
     puts("\\ \\  \\    \\ \\  \\|\\  \\ \\  \\___|\\|___ \\  \\_\\ \\  \\");     
@@ -412,7 +422,7 @@ void lose() {
 
 void win() {
     CLEAR;
-    printf("\033[0;32m"); //GREEN
+    printf("\033[0;92m"); //GREEN
     puts("\n ___       __   ___  ________   ___");       
     puts("|\\  \\     |\\  \\|\\  \\|\\   ___  \\|\\  \\");      
     puts("\\ \\  \\    \\ \\  \\ \\  \\ \\  \\\\ \\  \\ \\  \\");     
