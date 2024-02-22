@@ -17,7 +17,7 @@ Known bugs:
 
     - (COMPLETE) A new tile doesn't spawn if the board is full before your last move.
 
-    - Game still spawn new tile when you enter an unexpected character; resulting in a floating point exception when you fill the board. But this only happens after your first move.
+    - (COMPLETE) Game still spawn new tile when you enter an unexpected character; resulting in a floating point exception when you fill the board. But this only happens after your first move.
 
 Nice-to-haves but not necessary:
     - Keep track of score; in the original game, the score was the total value of the merged tiles, so the score only goes up when you merge tiles, and not with the randomly generated tiles.
@@ -115,6 +115,7 @@ int main (void) {
         case EXIT:
             return 0;
         default:
+            moved = 0;
             break;
         }
 
