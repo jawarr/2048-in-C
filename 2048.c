@@ -30,7 +30,7 @@ Nice-to-haves but not necessary:
     
     - Ability to play with both arrow keys and WASD.
 
-    - Clear the screen on operating systems other than Linux. I'm pretty sure "printf("\033[H\033[J")" only works on Linux.
+    - (Nevermind this is not plaform specfic) Clear the screen on operating systems other than Linux. I'm pretty sure "printf("\033[H\033[J")" only works on Linux.
 
     - Save a game/board to a file and have the ability to resume after closing the program.
 
@@ -43,7 +43,7 @@ Nice-to-haves but not necessary:
 #include <time.h>
 
 #define BLANK 0
-#define CLEAR printf("\033[H\033[J") // only works on linux, might have to comment out on other OS
+#define CLEAR printf("\033[H\033[J")
 
 enum Inputs {
     // ASCII codes
@@ -52,7 +52,8 @@ enum Inputs {
     LEFT = 97, // a
     RIGHT = 100, // d
     RESET = 114, // r
-    EXIT = 120 // x
+    EXIT = 120, // x
+    HELP = 104 //h
 };
 
 enum Moves {
@@ -169,10 +170,15 @@ void placeNewTile()
 
 void printBoard()
 {
-    printf("\033[0;90m            -----+----+----+-----\n");
+    if (score == 0){
+        printf("                 Score:      0\n\n");
+    }
+    else printf("                 Score:%7.d\n\n", score);
+
+    printf("\033[0;90m             -----+----+----+-----\n");
     for (int i = 0; i < 4; i++)
     {
-        printf("            ");
+        printf("             ");
         for (int j = 0; j < 4; j++)
         {
             printf("\033[0;90m|");
@@ -229,12 +235,12 @@ void printBoard()
             }
             printf("\033[0m");
         }
-        printf("\033[0;90m|\n            -----+----+----+-----\n\033[0m");
+        printf("\033[0;90m|\n             -----+----+----+-----\n\033[0m");
     }
 }
 
 char getInput() {
-    printf("\n             Slide Direction: ");
+    printf("\n                       ");
     char direction;
     scanf(" %c", &direction); //space so it can read the value
     return direction;
@@ -247,6 +253,7 @@ void resetBoard() {
             board[i][j] = BLANK;
         }
     }
+    score = 0;
     placeNewTile();
     placeNewTile();
 }
@@ -297,6 +304,7 @@ enum Moves moveTile(int row, int column, char direction, int merged) {
     else if (nextTileVal == tileVal && !merged) {
         board[row][column] = BLANK;
         board[nextRow][nextColumn] = tileVal << 1; //left shift because it's cooler than * 2
+        score += tileVal << 1;
         return MERGE;
     }
 
