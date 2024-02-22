@@ -67,10 +67,19 @@ enum Moves moveTile(int row, int column, char direction, int merged);
 int moveBoard(char direction);
 void printLogo();
 void resetBoard();
+void checkBoard();
+void win();
+void lose();
 
 
-int board[4][4] = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, BLANK};
+
 // int board[4][4] = {BLANK};
+// int board[4][4] = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 32, 8, 16, 32, BLANK}; //lose condition board
+int board[4][4] = {1024, 1024, BLANK};
+
+int score = 0;
+int won = 0;
+int lost = 0;
 
 int main (void) {
     char ch;
@@ -78,7 +87,7 @@ int main (void) {
     srand(time(NULL));
     resetBoard();
    
-    while (1) {
+    while (!won && !lost) {
         CLEAR;
         printLogo();
         printBoard();
@@ -110,9 +119,12 @@ int main (void) {
         if (moved) {
             placeNewTile();
         }
+
+        checkBoard();
     }
 
-
+    if (won) win();
+    else lose();
 
     return 0;
 }
@@ -151,110 +163,69 @@ void placeNewTile()
 
 void printBoard()
 {
-    printf("            -----+----+----+-----\n");
+    printf("\033[0;90m            -----+----+----+-----\n");
     for (int i = 0; i < 4; i++)
     {
         printf("            ");
         for (int j = 0; j < 4; j++)
         {
-            printf("|");
+            printf("\033[0;90m|");
             //ANSI color codes to color the output numbers
             switch (board[i][j])
             {
             case 2:
                 printf("\033[0;37m"); //WHITE
+                printf("  %d ", board[i][j]);
                 break;
             case 4:
                 printf("\033[0;31m"); //RED
+                printf("  %d ", board[i][j]);
                 break;
             case 8:
                 printf("\033[0;33m"); //YELLOW
+                printf("  %d ", board[i][j]);
                 break;
             case 16:
                 printf("\033[0;32m"); //GREEN
+                printf(" %d ", board[i][j]);
                 break;
             case 32:
                 printf("\033[0;36m"); //CYAN
+                printf(" %d ", board[i][j]);
                 break;
             case 64:
                 printf("\033[0;35m"); //PURPLE
+                printf(" %d ", board[i][j]);
                 break;
             case 128:
                 printf("\033[1;31m"); //BOLD RED
+                printf(" %d", board[i][j]);
                 break;
             case 256:
                 printf("\033[1;33m"); //BOLD YELLOW
+                printf(" %d", board[i][j]);
                 break;
             case 512:
                 printf("\033[1;32m"); //BOLD GREEN
+                printf(" %d", board[i][j]);
                 break;
             case 1024:
                 printf("\033[1;36m"); //BOLD CYAN
+                printf("%d", board[i][j]);
                 break;
             case 2048:
                 printf("\033[1;35m"); //BOLD PURPLE
+                printf("%d", board[i][j]);
                 break;
             default:
+                printf("%4.d", board[i][j]);
                 break;
             }
-            printf("%4.d", board[i][j]);
             printf("\033[0m");
         }
-        printf("|\n            -----+----+----+-----\n");
+        printf("\033[0;90m|\n            -----+----+----+-----\n\033[0m");
     }
 }
-
-// void printBoard() {
-//     for (int i = 0; i < 4; i++)
-//     {
-//         printf("            ");
-//         for (int j = 0; j < 4; j++)
-//         {
-            
-//             //ANSI escape code + RGB color codes to color the tiles
-//             switch (board[i][j])
-//             {
-//             case 2:
-//                 printf("\e[48;2;240;199;86m   2  "); 
-//                 break;
-//             case 4:
-//                 printf("\e[48;2;246;179;74m   4  ");  
-//                 break;
-//             case 8:
-//                 printf("\e[48;2;251;157;68m   8  "); 
-//                 break;
-//             case 16:
-//                 printf("\e[48;2;255;135;68m  16  ");  
-//                 break;
-//             case 32:
-//                 printf("\e[48;2;255;110;73m  32  ");  
-//                 break;
-//             case 64:
-//                 printf("\e[48;2;138;100;166m  64  ");  
-//                 break;
-//             case 128:
-//                 printf("\e[48;2;104;117;187m  128 ");  
-//                 break;
-//             case 256:
-//                 printf("\e[48;2;53;133;194m  256 "); 
-//                 break;
-//             case 512:
-//                 printf("\e[48;2;0;146;185m  512 ");  
-//                 break;
-//             case 1024:
-//                 printf("\e[48;2;0;156;164m 1024 ");  
-//                 break;
-//             case 2048:
-//                 printf("\e[48;2;0;163;136m 2048 ");  
-//                 break;
-//             default:
-//                 break;
-//             }
-//             printf("\e[0m");  //set font to default
-//         }
-//         printf("\n\n\n");
-//     }
-// }
 
 char getInput() {
     printf("\n             Slide Direction: ");
@@ -265,11 +236,11 @@ char getInput() {
 
 void resetBoard() {
     // reset everything 
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            board[i][j] = BLANK;
-        }
-    }
+    // for (int i = 0; i < 4; i++) {
+    //     for (int j = 0; j < 4; j++) {
+    //         board[i][j] = BLANK;
+    //     }
+    // }
     placeNewTile();
     placeNewTile();
 }
@@ -311,7 +282,6 @@ enum Moves moveTile(int row, int column, char direction, int merged) {
     
     //if the next tile is blank, slide current tile to next spot
     else if (nextTileVal == BLANK) {
-
         board[row][column] = BLANK;
         board[nextRow][nextColumn] = tileVal;
         return SLIDE;
@@ -321,7 +291,7 @@ enum Moves moveTile(int row, int column, char direction, int merged) {
     else if (nextTileVal == tileVal && !merged) {
         board[row][column] = BLANK;
         board[nextRow][nextColumn] = tileVal << 1; //left shift because it's cooler than * 2
-        if (nextTileVal == 2048) return WIN;
+        if (tileVal == 2048) return WIN;
         else return MERGE;
     }
 
@@ -376,7 +346,10 @@ int moveBoard(char direction) {
             for (int j = columnStart; j != columnEnd; j += columnCounter) { 
                 tileIndex = indexTile(i, j);
                 moveType = moveTile(i, j, direction, merged[tileIndex]);
-                if (moveType == WIN) moved = 1;
+                if (moveType == WIN) {
+                    moved = 1;
+                    won = 1;
+                }
                 else if (moveType == MERGE) {
                     //block tile from being moved
                     merged[tileIndex] = 1;
@@ -394,6 +367,20 @@ int moveBoard(char direction) {
     return moved;
 }
 
+
+
+void checkBoard() {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if ((board[i][j] == BLANK) ||
+                (i != 3 && board[i][j] == board[i + 1][j]) || 
+                (j != 3 && board[i][j] == board[i][j + 1])) 
+                return;
+        }
+    }
+    lost = 1;
+}
+
 void printLogo()
 {
     puts("\n  _______  ________  ___   ___  ________     ");
@@ -405,18 +392,35 @@ void printLogo()
     puts("    \\|_______|\\|_______|      \\|__|\\|_______|\n\n\n");
 }
 
-int checkBoard(int board[][4])
-{
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < 3; j++){
-            if (board[i][j] == board[i][j + 1]){
-                return 1;
-            }
-            else if (board[i][j] == 2048){
-                return 2;
-            }
-        }
-    }
-    return 0;
+void lose() {
+    CLEAR;
+    printf("\033[0;31m");
+    puts("\n ___       ________  ________  _________  ___");       
+    puts("|\\  \\     |\\   __  \\|\\   ____\\|\\___   ___\\\\  \\");      
+    puts("\\ \\  \\    \\ \\  \\|\\  \\ \\  \\___|\\|___ \\  \\_\\ \\  \\");     
+    puts(" \\ \\  \\    \\ \\  \\\\\\  \\ \\_____  \\   \\ \\  \\ \\ \\  \\");    
+    puts("  \\ \\  \\____\\ \\  \\\\\\  \\|____|\\  \\   \\ \\  \\ \\ \\__\\");   
+    puts("   \\ \\_______\\ \\_______\\____\\_\\  \\   \\ \\__\\ \\|__|");   
+    puts("    \\|_______|\\|_______|\\_________\\   \\|__|      ___"); 
+    puts("                        \\|_________|            |\\__\\");
+    puts("                                                \\|__|\n");
+    printf("\033[0m");
+    printBoard();
 }
+
+void win() {
+    CLEAR;
+    printf("\033[0;32m");
+    puts(" ___       __   ___  ________   ___");       
+    puts("|\\  \\     |\\  \\|\\  \\|\\   ___  \\|\\  \\");      
+    puts("\\ \\  \\    \\ \\  \\ \\  \\ \\  \\\\ \\  \\ \\  \\");     
+    puts(" \\ \\  \\  __\\ \\  \\ \\  \\ \\  \\\\ \\  \\ \\  \\");    
+    puts("  \\ \\  \\|\\__\\_\\  \\ \\  \\ \\  \\\\ \\  \\ \\__\\");   
+    puts("   \\ \\____________\\ \\__\\ \\__\\\\ \\__\\|__|");   
+    puts("    \\|____________|\\|__|\\|__| \\|__|   ___"); 
+    puts("                                     |\\__\\");
+    puts("                                     \\|__|");
+    printf("\033[0m");
+    printBoard();
+}
+
