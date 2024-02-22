@@ -17,6 +17,8 @@ Known bugs:
 
     - (COMPLETE) A new tile doesn't spawn if the board is full before your last move.
 
+    - Game still spawn new tile when you enter an unexpected character; resulting in a floating point exception when you fill the board. But this only happens after your first move.
+
 Nice-to-haves but not necessary:
     - Keep track of score; in the original game, the score was the total value of the merged tiles, so the score only goes up when you merge tiles, and not with the randomly generated tiles.
 
@@ -56,8 +58,7 @@ enum Inputs {
 enum Moves {
     STOP,
     SLIDE,
-    MERGE,
-    WIN
+    MERGE
 };
 
 void placeNewTile();
@@ -74,8 +75,8 @@ void lose();
 
 
 // int board[4][4] = {BLANK};
-// int board[4][4] = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 32, 8, 16, 32, BLANK}; //lose condition board
-int board[4][4] = {1024, 1024, BLANK};
+int board[4][4] = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 32, 8, 16, 32, BLANK}; //lose condition board
+// int board[4][4] = {1024, 0, 0, 0, 1024, BLANK}; // win condition board
 
 int score = 0;
 int won = 0;
@@ -85,9 +86,9 @@ int main (void) {
     char ch;
     int moved = 0;
     srand(time(NULL));
-    resetBoard();
+    // resetBoard();
    
-    while (!won && !lost) {
+    while (1) {                                 
         CLEAR;
         printLogo();
         printBoard();
@@ -119,8 +120,9 @@ int main (void) {
         if (moved) {
             placeNewTile();
         }
-
         checkBoard();
+
+        if (won || lost) break;
     }
 
     if (won) win();
@@ -236,11 +238,11 @@ char getInput() {
 
 void resetBoard() {
     // reset everything 
-    // for (int i = 0; i < 4; i++) {
-    //     for (int j = 0; j < 4; j++) {
-    //         board[i][j] = BLANK;
-    //     }
-    // }
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            board[i][j] = BLANK;
+        }
+    }
     placeNewTile();
     placeNewTile();
 }
@@ -291,8 +293,7 @@ enum Moves moveTile(int row, int column, char direction, int merged) {
     else if (nextTileVal == tileVal && !merged) {
         board[row][column] = BLANK;
         board[nextRow][nextColumn] = tileVal << 1; //left shift because it's cooler than * 2
-        if (tileVal == 2048) return WIN;
-        else return MERGE;
+        return MERGE;
     }
 
     //if the tiles are both occupied and do not match, stop
@@ -346,11 +347,7 @@ int moveBoard(char direction) {
             for (int j = columnStart; j != columnEnd; j += columnCounter) { 
                 tileIndex = indexTile(i, j);
                 moveType = moveTile(i, j, direction, merged[tileIndex]);
-                if (moveType == WIN) {
-                    moved = 1;
-                    won = 1;
-                }
-                else if (moveType == MERGE) {
+                if (moveType == MERGE) {
                     //block tile from being moved
                     merged[tileIndex] = 1;
                     //block next tile as well
@@ -372,6 +369,11 @@ int moveBoard(char direction) {
 void checkBoard() {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
+            printf("%d\n", board[i][j]);
+            if (board[i][j] == 2048) {
+                won = 1;
+                return;
+            }
             if ((board[i][j] == BLANK) ||
                 (i != 3 && board[i][j] == board[i + 1][j]) || 
                 (j != 3 && board[i][j] == board[i][j + 1])) 
@@ -394,7 +396,7 @@ void printLogo()
 
 void lose() {
     CLEAR;
-    printf("\033[0;31m");
+    printf("\033[0;31m"); //RED
     puts("\n ___       ________  ________  _________  ___");       
     puts("|\\  \\     |\\   __  \\|\\   ____\\|\\___   ___\\\\  \\");      
     puts("\\ \\  \\    \\ \\  \\|\\  \\ \\  \\___|\\|___ \\  \\_\\ \\  \\");     
@@ -410,8 +412,8 @@ void lose() {
 
 void win() {
     CLEAR;
-    printf("\033[0;32m");
-    puts(" ___       __   ___  ________   ___");       
+    printf("\033[0;32m"); //GREEN
+    puts("\n ___       __   ___  ________   ___");       
     puts("|\\  \\     |\\  \\|\\  \\|\\   ___  \\|\\  \\");      
     puts("\\ \\  \\    \\ \\  \\ \\  \\ \\  \\\\ \\  \\ \\  \\");     
     puts(" \\ \\  \\  __\\ \\  \\ \\  \\ \\  \\\\ \\  \\ \\  \\");    
@@ -419,7 +421,7 @@ void win() {
     puts("   \\ \\____________\\ \\__\\ \\__\\\\ \\__\\|__|");   
     puts("    \\|____________|\\|__|\\|__| \\|__|   ___"); 
     puts("                                     |\\__\\");
-    puts("                                     \\|__|");
+    puts("                                     \\|__|\n");
     printf("\033[0m");
     printBoard();
 }
