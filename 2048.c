@@ -1,16 +1,7 @@
 /*
-Nice-to-haves but not necessary:
-    - (COMPLETE) Keep track of score; in the original game, the score was the total value of the merged tiles, so the score only goes up when you merge tiles, and not with the randomly generated tiles.
-
-    - Give a description of the game, rules, how to play, etc. before the game starts.
-
     - Its a little unintuitive how the new tiles are randomly placed because there is no way to animate sliding, maybe new tiles could be marked with an astrisk or similar.
 
-    - (COMPLETE) Ability to reset the board with "r".
-
     - Ability to play with both arrow keys and WASD.
-
-    - (Nevermind this is not plaform specfic) Clear the screen on operating systems other than Linux. I'm pretty sure "printf("\033[H\033[J")" only works on Linux.
 
     - Save a game/board to a file and have the ability to resume after closing the program.
 
@@ -67,7 +58,8 @@ int score = 0;
 int won = 0;
 int lost = 0;
 
-int main (void) {
+int main (void) 
+{
     enum Inputs input;
     int moved = 0;
     int firstTime = 1; 
@@ -78,11 +70,14 @@ int main (void) {
     {
         CLEAR;
         printLogo();
-    
-        if (firstTime) {
+
+        //only prints when you first run the program.
+        if (firstTime) 
+        {
             printf("          Enter \"help\" for a tutorial.");
             firstTime = 0;
-            }
+        }
+
         printf("\n\n");
 
         printScore();
@@ -111,32 +106,28 @@ int main (void) {
             moved = 0;
             resetBoard();
             break;
+        case EXIT:
+            exit(0);
         default:
             moved = 0;
             break;
         }
 
-        if (moved)
-        {
-            placeNewTile();
-        }
+        if (moved) placeNewTile();
 
         checkWin();
         checkLoss();
 
-        if (won || lost)
-            break;
+        if (won || lost) break;
     }
 
-    if (won)
-        win();
-    else
-        lose();
+    if (won) win();
+    else lose();
 
     return 0;
 }
 
-void placeNewTile()
+void placeNewTile() 
 {
     // places a new tile on one of the empty tiles
     int tileVal = BLANK;
@@ -168,15 +159,18 @@ void placeNewTile()
     board[emptyTiles[tilePosition][0]][emptyTiles[tilePosition][1]] = tileVal;
 }
 
-void printScore() {
+void printScore() 
+{
+    //prints the score
     if (score == 0){
         printf("                 Score:      0\n\n");
     }
     else printf("                 Score:%7.d\n\n", score);
 }
 
-void printBoard() {
-
+void printBoard() 
+{
+    //prints the game board with formatting and colors
     printf("\033[0;90m             -----+----+----+-----\n");
     for (int i = 0; i < 4; i++)
     {
@@ -241,7 +235,8 @@ void printBoard() {
     }
 }
 
-enum Inputs getInput() {
+enum Inputs getInput() 
+{
     printf("\n                       ");
     char str[5];
     enum Inputs input;
@@ -253,7 +248,7 @@ enum Inputs getInput() {
     return input;
 }
 
-void resetBoard()
+void resetBoard() 
 {
     // reset everything
     for (int i = 0; i < 4; i++)
@@ -268,7 +263,7 @@ void resetBoard()
     placeNewTile();
 }
 
-enum Moves moveTile(int row, int column, char direction, int merged)
+enum Moves moveTile(int row, int column, char direction, int merged) 
 {
     // attempt to move a single tile and return its move type
     int tileVal = board[row][column];
@@ -365,13 +360,16 @@ int moveBoard(char direction)
         break;
     }
 
+    //array to track which tiles have merged
     int merged[16] = {0};
     int tileIndex;
     enum Moves moveType;
+    
+    //if moved == 0 after this function executes, the board did not move.
     int moved = 0;
 
-    for (int k = 0; k < 3; k++)
-    { // tiles can only move up to three times in any direction
+    for (int k = 0; k < 3; k++) // 3 because tiles can only move up to three times in any direction
+    { 
         for (int i = rowStart; i != rowEnd; i += rowCounter)
         {
             for (int j = columnStart; j != columnEnd; j += columnCounter)
@@ -397,7 +395,9 @@ int moveBoard(char direction)
     return moved;
 }
 
-void checkWin() {
+//checks the board for a 2048 tile
+void checkWin() 
+{
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             if (board[i][j] == 2048) {
@@ -408,6 +408,7 @@ void checkWin() {
     }
 }
 
+//checks if the board is full with no moves left
 void checkLoss()
 {
     for (int i = 0; i < 4; i++)
@@ -423,18 +424,18 @@ void checkLoss()
     lost = 1;
 }
 
+//tutorial
 void help() {
-    //tutorial
-
-
     //create a back-up of the board and score so the player can resume after the tutorial is over.
     //try memcpy later
     int scoreCopy = score;
     int boardCopy[4][4];
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) 
+    {
         for (int j = 0; j < 4; j++) boardCopy[i][j] = board[i][j];
     }
 
+    //print the controls
     CLEAR;
     printLogo();
     printf("                 CONTROLS:\n\n");
@@ -449,16 +450,17 @@ void help() {
     getInput();
 
     //make the board blank except for one "2".
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            board[i][j] = (i == 1 && j == 1) ? 2 : BLANK;
-        }
+    for (int i = 0; i < 4; i++) 
+    {
+        for (int j = 0; j < 4; j++) board[i][j] = (i == 1 && j == 1) ? 2 : BLANK;
+    
     }
 
     //loops until player has entered every direction
     enum Inputs input;
     int u = 0, d = 0, l = 0, r = 0;
-    while(1) {
+    while(1) 
+    {
         CLEAR;
         printLogo();
         //print green checkmark for each direction entered
@@ -490,15 +492,14 @@ void help() {
                 break;
         }
 
-        if ((u && d) && (l && r)) {
-
-            break;
-        }
+        if ((u && d) && (l && r)) break;
     }
 
     //reset board with new values
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < 4; i++) 
+    {
+        for (int j = 0; j < 4; j++)
+        {
             if ((i == 0 && j == 1) || (i == 1 && j == 0)) board[i][j] = 2;
             else if (i == 0 && j == 0) board[i][j] = 4;
             else board[i][j] = BLANK;
@@ -506,7 +507,8 @@ void help() {
     }
 
     //loops until player creates a "8" tile
-    while(1) {
+    while(1)
+    {
         CLEAR;
         printLogo();
         printf("        Equal tiles merge; unequal do not.\n\n              Create an \"8\" tile:\n\n");
@@ -534,17 +536,19 @@ void help() {
 
         //check for 16
         int check = 0;
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                if (board[i][j] == 8) check = 1;
-            }
+        for (int i = 0; i < 4; i++) 
+        {
+            for (int j = 0; j < 4; j++) if (board[i][j] == 8) check = 1;
         }
+
         if (check == 1) break;
     }
 
     int counter = 0;
     int moved = 0;
-    while(counter < 4) {
+    //loops until board is moved 4 times
+    while(counter < 4) 
+    {
         CLEAR;
         printLogo();
         printf("A new tile is randomly placed after each slide.\n\n          Slide the board 4 times.\n\n");
@@ -569,17 +573,16 @@ void help() {
             moved = 0;
             break;
         }
-        if (moved) {
-            placeNewTile();
-        }
+
+        if (moved) placeNewTile();
+        
         counter++;
     }
 
     //lose condition board
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            board[i][j] = 2 << (i+j+1);
-        }
+    for (int i = 0; i < 4; i++) 
+    {
+        for (int j = 0; j < 4; j++) board[i][j] = 2 << (i+j+1);
     }
     
     CLEAR;
@@ -589,10 +592,9 @@ void help() {
     getInput();
 
     //2028 tile board
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            board[i][j] = (i == 1 && j == 1) ? 2048 : 0;
-        }
+    for (int i = 0; i < 4; i++) 
+    {
+        for (int j = 0; j < 4; j++) board[i][j] = (i == 1 && j == 1) ? 2048 : 0;
     }
 
     CLEAR;
@@ -602,16 +604,17 @@ void help() {
     getInput();
 
     //set board and score to how they were before tutorial
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            board[i][j] = boardCopy[i][j];
-        }
+    for (int i = 0; i < 4; i++) 
+    {
+        for (int j = 0; j < 4; j++) board[i][j] = boardCopy[i][j];
     }
 
     score = scoreCopy;
 }
 
-void printLogo() {
+//prints the 2048 logo
+void printLogo() 
+{
     puts("\n  _______  ________  ___   ___  ________     ");
     puts(" /  ___  \\|\\   __  \\|\\  \\ |\\  \\|\\   __  \\    ");
     puts("/__/|_/  /\\ \\  \\|\\  \\ \\  \\\\_\\  \\ \\  \\|\\  \\   ");
