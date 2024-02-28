@@ -1,26 +1,6 @@
 /*
-Known bugs:
-    - (COMPLETE) Tiles can merge multiple times in one move. In the original 2048 game, each tile can only merge once per move. 
-        - e.g. a row of 2s: 
-          [2][2][2][2]
-          should merge into two 4s if moved left:
-          [4][4][ ][ ]
-          currently, the game outputs one 8:
-          [8][ ][ ][ ]
-        - I think we would need to use the mapTile function and the keep track of which tiles have been merged, but i haven't figured it out yet.
-    
-    - (COMPLETE) If the selected direction does not have any moves across the board, the game still places a new tile and lets you continue playing the game. It should force you to select a direction that moves the board in some way.
-
-    - (COMPLETE) There is no check for win or lose condition, if the board is full with no legal moves, or a 2048 tile is created, nothing happens.
-
-    - (COMPLETE) There needs to be a way to exit the game without the Ctrl + C.
-
-    - (COMPLETE) A new tile doesn't spawn if the board is full before your last move.
-
-    - (COMPLETE) Game still spawn new tile when you enter an unexpected character; resulting in a floating point exception when you fill the board. But this only happens after your first move.
-
 Nice-to-haves but not necessary:
-    - Keep track of score; in the original game, the score was the total value of the merged tiles, so the score only goes up when you merge tiles, and not with the randomly generated tiles.
+    - (COMPLETE) Keep track of score; in the original game, the score was the total value of the merged tiles, so the score only goes up when you merge tiles, and not with the randomly generated tiles.
 
     - Give a description of the game, rules, how to play, etc. before the game starts.
 
@@ -35,12 +15,12 @@ Nice-to-haves but not necessary:
     - Save a game/board to a file and have the ability to resume after closing the program.
 
     - Save highscore to the same file and display in the terminal.
-
 */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #define BLANK 0
 #define CLEAR printf("\033[H\033[J")
@@ -51,9 +31,10 @@ enum Inputs {
     DOWN = 115, // s
     LEFT = 97, // a
     RIGHT = 100, // d
-    RESET = 114, // r
-    EXIT = 120, // x
-    HELP = 104 //h
+    NEXT = 110, // n
+    RESET = 256, //first available number that isn't an ASCII code
+    EXIT = 257, 
+    HELP = 258
 };
 
 enum Moves {
@@ -64,38 +45,48 @@ enum Moves {
 
 void placeNewTile();
 void printBoard();
-char getInput();
+enum Inputs getInput();
 enum Moves moveTile(int row, int column, char direction, int merged);
 int moveBoard(char direction);
 void printLogo();
+void printScore();
 void resetBoard();
 void checkWin();
 void checkLoss();
 void win();
 void lose();
+void help();
 
 
 
 int board[4][4] = {BLANK};
-// int board[4][4] = {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 32, 8, 16, 32, BLANK}; //lose condition test board
-// int board[4][4] = {1024, 0, 0, 0, 1024, BLANK}; // win condition test board
 
 int score = 0;
 int won = 0;
 int lost = 0;
 
 int main (void) {
-    char ch;
+    enum Inputs input;
     int moved = 0;
+    int firstTime = 1; 
     srand(time(NULL));
     resetBoard();
    
     while (1) {                                 
         CLEAR;
         printLogo();
+    
+        if (firstTime) {
+            printf("          Enter \"help\" for a tutorial.");
+            firstTime = 0;
+            }
+        printf("\n\n");
+
+        printScore();
         printBoard();
-        ch = getInput();
-        switch (ch) //switch prevents undefined behavior
+        input = getInput();
+        
+        switch (input) //switch prevents undefined behavior
         {
         case UP:
             moved = moveBoard(UP);
@@ -109,12 +100,14 @@ int main (void) {
         case RIGHT:
             moved = moveBoard(RIGHT);
             break;
+        case HELP:
+            help();
+            moved = 0;
+            break;
         case RESET:
             moved = 0;
             resetBoard();
             break;
-        case EXIT:
-            return 0;
         default:
             moved = 0;
             break;
@@ -168,12 +161,14 @@ void placeNewTile()
     board[emptyTiles[tilePosition][0]][emptyTiles[tilePosition][1]] = tileVal;
 }
 
-void printBoard()
-{
+void printScore() {
     if (score == 0){
         printf("                 Score:      0\n\n");
     }
     else printf("                 Score:%7.d\n\n", score);
+}
+
+void printBoard() {
 
     printf("\033[0;90m             -----+----+----+-----\n");
     for (int i = 0; i < 4; i++)
@@ -239,11 +234,16 @@ void printBoard()
     }
 }
 
-char getInput() {
+enum Inputs getInput() {
     printf("\n                       ");
-    char direction;
-    scanf(" %c", &direction); //space so it can read the value
-    return direction;
+    char str[5];
+    enum Inputs input;
+    scanf(" %s", str); //space so it can read the value
+    if (!strcmp(str, "reset")) input = RESET;
+    else if (!strcmp(str, "exit")) input = EXIT;
+    else if (!strcmp(str, "help")) input = HELP;
+    else input = (int)str[0];
+    return input;
 }
 
 void resetBoard() {
@@ -376,8 +376,6 @@ int moveBoard(char direction) {
     return moved;
 }
 
-
-
 void checkWin() {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
@@ -401,16 +399,202 @@ void checkLoss() {
     lost = 1;
 }
 
+void help() {
+    //tutorial
 
-void printLogo()
-{
+
+    //create a back-up of the board and score so the player can resume after the tutorial is over.
+    //try memcpy later
+    int scoreCopy = score;
+    int boardCopy[4][4];
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) boardCopy[i][j] = board[i][j];
+    }
+
+    CLEAR;
+    printLogo();
+    printf("                 CONTROLS:\n\n");
+    printf("            w = slide board up ↑\n");
+    printf("            a = slide board left ←\n");
+    printf("            s = slide board down ↓\n");
+    printf("            d = slide board right →\n\n");
+    printf("            reset = reset the game\n");
+    printf("            exit = exit the program\n");
+    printf("            help = view the tutorial\n\n");
+    printf("            Enter any key to continue.\n");
+    getInput();
+
+    //make the board blank except for one "2".
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            board[i][j] = (i == 1 && j == 1) ? 2 : BLANK;
+        }
+    }
+
+    //loops until player has entered every direction
+    enum Inputs input;
+    int u = 0, d = 0, l = 0, r = 0;
+    while(1) {
+        CLEAR;
+        printLogo();
+        //print green checkmark for each direction entered
+        printf("      Slide the tiles using WASD + ENTER.\n\n         up[%s] down[%s] left[%s] right[%s]\n\n", (u == 1?"\033[0;92m✓\033[0m":" "), (d == 1?"\033[0;92m✓\033[0m":" "), (l == 1?"\033[0;92m✓\033[0m":" "), (r == 1?"\033[0;92m✓\033[0m":" "));
+        printBoard();
+        
+        input = getInput();
+        switch (input) 
+        {
+            case UP:
+                moveBoard(UP);
+                u = 1;
+                break;
+            case DOWN:
+                moveBoard(DOWN);
+                d = 1;
+                break;
+            case LEFT:
+                moveBoard(LEFT);
+                l = 1;
+                break;
+            case RIGHT:
+                moveBoard(RIGHT);
+                r = 1;
+                break;
+            case EXIT:
+                return;
+            default:
+                break;
+        }
+
+        if ((u && d) && (l && r)) {
+
+            break;
+        }
+    }
+
+    //reset board with new values
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if ((i == 0 && j == 1) || (i == 1 && j == 0)) board[i][j] = 2;
+            else if (i == 0 && j == 0) board[i][j] = 4;
+            else board[i][j] = BLANK;
+        }
+    }
+
+    //loops until player creates a "8" tile
+    while(1) {
+        CLEAR;
+        printLogo();
+        printf("        Equal tiles merge; unequal do not.\n\n              Create an \"8\" tile:\n\n");
+        printBoard();
+        
+        input = getInput();
+        switch (input) //switch prevents undefined behavior
+        {
+        case UP:
+            moveBoard(UP);
+            break;
+        case DOWN:
+            moveBoard(DOWN);
+            break;
+        case LEFT:
+            moveBoard(LEFT);
+            break;
+        case RIGHT:
+            moveBoard(RIGHT);
+            break;
+        default:
+            break;
+        }
+
+
+        //check for 16
+        int check = 0;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (board[i][j] == 8) check = 1;
+            }
+        }
+        if (check == 1) break;
+    }
+
+    int counter = 0;
+    int moved = 0;
+    while(counter < 4) {
+        CLEAR;
+        printLogo();
+        printf("A new tile is randomly placed after each slide.\n\n          Slide the board 4 times.\n\n");
+        printBoard();
+        
+        input = getInput();
+        switch (input) //switch prevents undefined behavior
+        {
+        case UP:
+            moved = moveBoard(UP);
+            break;
+        case DOWN:
+            moved = moveBoard(DOWN);
+            break;
+        case LEFT:
+            moved = moveBoard(LEFT);
+            break;
+        case RIGHT:
+            moved = moveBoard(RIGHT);
+            break;
+        default:
+            moved = 0;
+            break;
+        }
+        if (moved) {
+            placeNewTile();
+        }
+        counter++;
+    }
+
+    //lose condition board
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            board[i][j] = 2 << (i+j+1);
+        }
+    }
+    
+    CLEAR;
+    printLogo();
+    printf("If the board is full & no merge left, you lose.\n\n          Enter any key to continue.\n\n");
+    printBoard();
+    getInput();
+
+    //2028 tile board
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            board[i][j] = (i == 1 && j == 1) ? 2048 : 0;
+        }
+    }
+
+    CLEAR;
+    printLogo();
+    printf("      If you create a 2048 tile, you win!\n\n         Enter any key to resume game.\n\n");
+    printBoard();
+    getInput();
+
+    //set board and score to how they were before tutorial
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            board[i][j] = boardCopy[i][j];
+        }
+    }
+
+    score = scoreCopy;
+}
+
+void printLogo() {
     puts("\n  _______  ________  ___   ___  ________     ");
     puts(" /  ___  \\|\\   __  \\|\\  \\ |\\  \\|\\   __  \\    ");
     puts("/__/|_/  /\\ \\  \\|\\  \\ \\  \\\\_\\  \\ \\  \\|\\  \\   ");
     puts("|__|//  / /\\ \\  \\\\\\  \\ \\______  \\ \\   __  \\  ");
     puts("    /  /_/__\\ \\  \\\\\\  \\|_____|\\  \\ \\  \\|\\  \\ ");
     puts("   |\\________\\ \\_______\\     \\ \\__\\ \\_______\\");
-    puts("    \\|_______|\\|_______|      \\|__|\\|_______|\n\n\n");
+    puts("    \\|_______|\\|_______|      \\|__|\\|_______|\n");
 }
 
 void lose() {
@@ -426,6 +610,7 @@ void lose() {
     puts("                        \\|_________|            |\\__\\");
     puts("                                                \\|__|\n");
     printf("\033[0m");
+    printScore();
     printBoard();
 }
 
@@ -442,6 +627,7 @@ void win() {
     puts("                                     |\\__\\");
     puts("                                     \\|__|\n");
     printf("\033[0m");
+    printScore();
     printBoard();
 }
 
