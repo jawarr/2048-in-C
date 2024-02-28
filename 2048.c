@@ -7,7 +7,7 @@ Nice-to-haves but not necessary:
     - Its a little unintuitive how the new tiles are randomly placed because there is no way to animate sliding, maybe new tiles could be marked with an astrisk or similar.
 
     - (COMPLETE) Ability to reset the board with "r".
-    
+
     - Ability to play with both arrow keys and WASD.
 
     - (Nevermind this is not plaform specfic) Clear the screen on operating systems other than Linux. I'm pretty sure "printf("\033[H\033[J")" only works on Linux.
@@ -25,11 +25,12 @@ Nice-to-haves but not necessary:
 #define BLANK 0
 #define CLEAR printf("\033[H\033[J")
 
-enum Inputs {
+enum Inputs
+{
     // ASCII codes
-    UP = 119, // w
-    DOWN = 115, // s
-    LEFT = 97, // a
+    UP = 119,    // w
+    DOWN = 115,  // s
+    LEFT = 97,   // a
     RIGHT = 100, // d
     NEXT = 110, // n
     RESET = 256, //first available number that isn't an ASCII code
@@ -37,7 +38,8 @@ enum Inputs {
     HELP = 258
 };
 
-enum Moves {
+enum Moves
+{
     STOP,
     SLIDE,
     MERGE
@@ -71,8 +73,9 @@ int main (void) {
     int firstTime = 1; 
     srand(time(NULL));
     resetBoard();
-   
-    while (1) {                                 
+
+    while (1)
+    {
         CLEAR;
         printLogo();
     
@@ -113,18 +116,22 @@ int main (void) {
             break;
         }
 
-        if (moved) {
+        if (moved)
+        {
             placeNewTile();
         }
 
         checkWin();
         checkLoss();
 
-        if (won || lost) break;
+        if (won || lost)
+            break;
     }
 
-    if (won) win();
-    else lose();
+    if (won)
+        win();
+    else
+        lose();
 
     return 0;
 }
@@ -177,51 +184,51 @@ void printBoard() {
         for (int j = 0; j < 4; j++)
         {
             printf("\033[0;90m|");
-            //ANSI color codes to color the output numbers
+            // ANSI color codes to color the output numbers
             switch (board[i][j])
             {
             case 2:
-                printf("\033[0;37m"); //WHITE
+                printf("\033[0;37m"); // WHITE
                 printf("  %d ", board[i][j]);
                 break;
             case 4:
-                printf("\033[0;31m"); //RED
+                printf("\033[0;31m"); // RED
                 printf("  %d ", board[i][j]);
                 break;
             case 8:
-                printf("\033[0;33m"); //YELLOW
+                printf("\033[0;33m"); // YELLOW
                 printf("  %d ", board[i][j]);
                 break;
             case 16:
-                printf("\033[0;32m"); //GREEN
+                printf("\033[0;32m"); // GREEN
                 printf(" %d ", board[i][j]);
                 break;
             case 32:
-                printf("\033[0;36m"); //CYAN
+                printf("\033[0;36m"); // CYAN
                 printf(" %d ", board[i][j]);
                 break;
             case 64:
-                printf("\033[0;35m"); //PURPLE
+                printf("\033[0;35m"); // PURPLE
                 printf(" %d ", board[i][j]);
                 break;
             case 128:
-                printf("\033[1;31m"); //BOLD RED
+                printf("\033[1;31m"); // BOLD RED
                 printf(" %d", board[i][j]);
                 break;
             case 256:
-                printf("\033[1;33m"); //BOLD YELLOW
+                printf("\033[1;33m"); // BOLD YELLOW
                 printf(" %d", board[i][j]);
                 break;
             case 512:
-                printf("\033[1;32m"); //BOLD GREEN
+                printf("\033[1;32m"); // BOLD GREEN
                 printf(" %d", board[i][j]);
                 break;
             case 1024:
-                printf("\033[1;36m"); //BOLD CYAN
+                printf("\033[1;36m"); // BOLD CYAN
                 printf("%d", board[i][j]);
                 break;
             case 2048:
-                printf("\033[1;35m"); //BOLD PURPLE
+                printf("\033[1;35m"); // BOLD PURPLE
                 printf("%d", board[i][j]);
                 break;
             default:
@@ -246,10 +253,13 @@ enum Inputs getInput() {
     return input;
 }
 
-void resetBoard() {
-    // reset everything 
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
+void resetBoard()
+{
+    // reset everything
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
             board[i][j] = BLANK;
         }
     }
@@ -258,12 +268,12 @@ void resetBoard() {
     placeNewTile();
 }
 
-enum Moves moveTile(int row, int column, char direction, int merged) { 
-    //attempt to move a single tile and return its move type
+enum Moves moveTile(int row, int column, char direction, int merged)
+{
+    // attempt to move a single tile and return its move type
     int tileVal = board[row][column];
     int nextRow = row;
     int nextColumn = column;
-
 
     // if attempting to slide a blank tile, stop
     if (tileVal == BLANK)
@@ -290,30 +300,35 @@ enum Moves moveTile(int row, int column, char direction, int merged) {
 
     int nextTileVal = board[nextRow][nextColumn];
 
-    //if the tile is attempting to slide of the board, stop
-    if (nextRow < 0 || nextRow > 3 || nextColumn < 0 || nextColumn > 3) return STOP;
-    
-    //if the next tile is blank, slide current tile to next spot
-    else if (nextTileVal == BLANK) {
+    // if the tile is attempting to slide of the board, stop
+    if (nextRow < 0 || nextRow > 3 || nextColumn < 0 || nextColumn > 3)
+        return STOP;
+
+    // if the next tile is blank, slide current tile to next spot
+    else if (nextTileVal == BLANK)
+    {
         board[row][column] = BLANK;
         board[nextRow][nextColumn] = tileVal;
         return SLIDE;
     }
-    
-    //if the next tile is the same value as the current tile and has not already been merged, merge the tiles
-    else if (nextTileVal == tileVal && !merged) {
+
+    // if the next tile is the same value as the current tile and has not already been merged, merge the tiles
+    else if (nextTileVal == tileVal && !merged)
+    {
         board[row][column] = BLANK;
-        board[nextRow][nextColumn] = tileVal << 1; //left shift because it's cooler than * 2
+        board[nextRow][nextColumn] = tileVal << 1; // left shift because it's cooler than * 2
         score += tileVal << 1;
         return MERGE;
     }
 
-    //if the tiles are both occupied and do not match, stop
-    else if (nextTileVal != BLANK && nextTileVal != tileVal) return STOP;
+    // if the tiles are both occupied and do not match, stop
+    else if (nextTileVal != BLANK && nextTileVal != tileVal)
+        return STOP;
 }
 
-int indexTile(int row, int column) {
-    //map a tile's coordinates to a single index number
+int indexTile(int row, int column)
+{
+    // map a tile's coordinates to a single index number
 
     return (row << 2) | column;
     /* This works because the highest row or column value is 3, which is two bits in binary.
@@ -322,11 +337,13 @@ int indexTile(int row, int column) {
        which will be unique for every coordinate. */
 }
 
-int moveBoard(char direction) {
-    //move every tile on the board in a direction
-    int rowStart=0, columnStart=0, rowEnd=4, columnEnd=4, rowCounter=1, columnCounter=1;
-    
-    switch (direction) {
+int moveBoard(char direction)
+{
+    // move every tile on the board in a direction
+    int rowStart = 0, columnStart = 0, rowEnd = 4, columnEnd = 4, rowCounter = 1, columnCounter = 1;
+
+    switch (direction)
+    {
     case UP:
         rowStart = 1;
 
@@ -337,7 +354,7 @@ int moveBoard(char direction) {
         rowEnd = -1;
         break;
     case LEFT:
-        
+
         break;
     case RIGHT:
         columnStart = 2;
@@ -348,28 +365,32 @@ int moveBoard(char direction) {
         break;
     }
 
-    
     int merged[16] = {0};
     int tileIndex;
     enum Moves moveType;
     int moved = 0;
 
-    for (int k = 0; k < 3; k++) { // tiles can only move up to three times in any direction
-        for (int i = rowStart; i != rowEnd; i += rowCounter) { 
-            for (int j = columnStart; j != columnEnd; j += columnCounter) { 
+    for (int k = 0; k < 3; k++)
+    { // tiles can only move up to three times in any direction
+        for (int i = rowStart; i != rowEnd; i += rowCounter)
+        {
+            for (int j = columnStart; j != columnEnd; j += columnCounter)
+            {
                 tileIndex = indexTile(i, j);
                 moveType = moveTile(i, j, direction, merged[tileIndex]);
-                if (moveType == MERGE) {
-                    //block tile from being moved
+                if (moveType == MERGE)
+                {
+                    // block tile from being moved
                     merged[tileIndex] = 1;
-                    //block next tile as well
+                    // block next tile as well
                     int next_row = i + ((direction == UP || direction == DOWN) ? rowCounter * -1 : 0);
                     int next_column = j + ((direction == RIGHT || direction == LEFT) ? columnCounter * -1 : 0);
                     int next_tile_index = indexTile(next_row, next_column);
                     merged[next_tile_index] = 1;
                     moved = 1;
                 }
-                else if (moveType != STOP) moved = 1;
+                else if (moveType != STOP)
+                    moved = 1;
             }
         }
     }
@@ -387,11 +408,14 @@ void checkWin() {
     }
 }
 
-void checkLoss() {
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
+void checkLoss()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
             if ((board[i][j] == BLANK) ||
-                (i != 3 && board[i][j] == board[i + 1][j]) || 
+                (i != 3 && board[i][j] == board[i + 1][j]) ||
                 (j != 3 && board[i][j] == board[i][j + 1]))
                 return;
         }
@@ -597,16 +621,17 @@ void printLogo() {
     puts("    \\|_______|\\|_______|      \\|__|\\|_______|\n");
 }
 
-void lose() {
+void lose()
+{
     CLEAR;
-    printf("\033[0;91m"); //RED
-    puts("\n ___       ________  ________  _________  ___");       
-    puts("|\\  \\     |\\   __  \\|\\   ____\\|\\___   ___\\\\  \\");      
-    puts("\\ \\  \\    \\ \\  \\|\\  \\ \\  \\___|\\|___ \\  \\_\\ \\  \\");     
-    puts(" \\ \\  \\    \\ \\  \\\\\\  \\ \\_____  \\   \\ \\  \\ \\ \\  \\");    
-    puts("  \\ \\  \\____\\ \\  \\\\\\  \\|____|\\  \\   \\ \\  \\ \\ \\__\\");   
-    puts("   \\ \\_______\\ \\_______\\____\\_\\  \\   \\ \\__\\ \\|__|");   
-    puts("    \\|_______|\\|_______|\\_________\\   \\|__|      ___"); 
+    printf("\033[0;91m"); // RED
+    puts("\n ___       ________  ________  _________  ___");
+    puts("|\\  \\     |\\   __  \\|\\   ____\\|\\___   ___\\\\  \\");
+    puts("\\ \\  \\    \\ \\  \\|\\  \\ \\  \\___|\\|___ \\  \\_\\ \\  \\");
+    puts(" \\ \\  \\    \\ \\  \\\\\\  \\ \\_____  \\   \\ \\  \\ \\ \\  \\");
+    puts("  \\ \\  \\____\\ \\  \\\\\\  \\|____|\\  \\   \\ \\  \\ \\ \\__\\");
+    puts("   \\ \\_______\\ \\_______\\____\\_\\  \\   \\ \\__\\ \\|__|");
+    puts("    \\|_______|\\|_______|\\_________\\   \\|__|      ___");
     puts("                        \\|_________|            |\\__\\");
     puts("                                                \\|__|\n");
     printf("\033[0m");
@@ -614,20 +639,20 @@ void lose() {
     printBoard();
 }
 
-void win() {
+void win()
+{
     CLEAR;
-    printf("\033[0;92m"); //GREEN
-    puts("\n ___       __   ___  ________   ___");       
-    puts("|\\  \\     |\\  \\|\\  \\|\\   ___  \\|\\  \\");      
-    puts("\\ \\  \\    \\ \\  \\ \\  \\ \\  \\\\ \\  \\ \\  \\");     
-    puts(" \\ \\  \\  __\\ \\  \\ \\  \\ \\  \\\\ \\  \\ \\  \\");    
-    puts("  \\ \\  \\|\\__\\_\\  \\ \\  \\ \\  \\\\ \\  \\ \\__\\");   
-    puts("   \\ \\____________\\ \\__\\ \\__\\\\ \\__\\|__|");   
-    puts("    \\|____________|\\|__|\\|__| \\|__|   ___"); 
+    printf("\033[0;92m"); // GREEN
+    puts("\n ___       __   ___  ________   ___");
+    puts("|\\  \\     |\\  \\|\\  \\|\\   ___  \\|\\  \\");
+    puts("\\ \\  \\    \\ \\  \\ \\  \\ \\  \\\\ \\  \\ \\  \\");
+    puts(" \\ \\  \\  __\\ \\  \\ \\  \\ \\  \\\\ \\  \\ \\  \\");
+    puts("  \\ \\  \\|\\__\\_\\  \\ \\  \\ \\  \\\\ \\  \\ \\__\\");
+    puts("   \\ \\____________\\ \\__\\ \\__\\\\ \\__\\|__|");
+    puts("    \\|____________|\\|__|\\|__| \\|__|   ___");
     puts("                                     |\\__\\");
     puts("                                     \\|__|\n");
     printf("\033[0m");
     printScore();
     printBoard();
 }
-
