@@ -1,4 +1,5 @@
 # 2048-in-C
+![](https://github.com/jawarr/2048-in-C/blob/main/2048-demo.gif)
 2048 clone written in C, played in the terminal.
 
 ## How to Play:
