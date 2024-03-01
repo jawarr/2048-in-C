@@ -1,5 +1,5 @@
 # 2048-in-C
-<img src="[https://your-image-url.type](https://github.com/jawarr/2048-in-C/blob/main/2048-demo.gif)" width="400" height="400"> <br>
+<alt src="[https://your-image-url.type](https://github.com/jawarr/2048-in-C/blob/main/2048-demo.gif)" width="400" height="400"> <br>
 2048 clone written in C, played in the terminal.
 
 ## How to Play:
