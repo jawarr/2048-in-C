@@ -23,7 +23,6 @@ enum Inputs
     DOWN = 115,  // s
     LEFT = 97,   // a
     RIGHT = 100, // d
-    NEXT = 110, // n
     RESET = 256, //first available number that isn't an ASCII code
     EXIT = 257, 
     HELP = 258
@@ -425,7 +424,8 @@ void checkLoss()
 }
 
 //tutorial
-void help() {
+void help() 
+{
     //create a back-up of the board and score so the player can resume after the tutorial is over.
     //try memcpy later
     int scoreCopy = score;
