@@ -1,7 +1,19 @@
 # 2048-in-C
+<img src="https://github.com/jawarr/2048-in-C/blob/main/2048-demo.gif" width="400" height="400"> <br>
+2048 clone written in C, played in the terminal.
 
-![alt text](https://github.com/jawarr/2048-in-C/blob/main/logo.png?raw=true)
+## How to Play:
+- Enter a direction for the tiles to slide, and all tiles on the board will slide in that direction until they hit the edge of the board, or another tile. 
+- If two tiles of the same value bump into each other, they will merge into one tile double the value.
+- A new tile is randomly placed after each move.
+- If you fill the board and have no moves left, you lose.
+- If you create a 2048 tile, you win!
 
-2048 clone written in C, played in the terminal
-
-2048 is a tile-sliding game with the objective of creating a 2048 tile. Users will enter a direction for the tiles to slide, and all tiles on the board will slide in that direction until they hit the edge of the board or another tile. If two tiles of the same value bump into each other, they will merge into one tile with the sum of the two values. The game will implement file handling, classes, loops, and control statements.
+## Controls:
+- w = slide board up ↑
+- a = slide board left ←
+- s = slide board down ↓
+- d = slide board right →
+- reset = reset the game
+- exit = exit the program
+- help = view the tutorial
