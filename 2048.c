@@ -239,7 +239,7 @@ enum Inputs getInput()
     printf("\n                       ");
     char str[5];
     enum Inputs input;
-    scanf(" %s", str); //space so it can read the value
+    scanf(" %s", str);
     if (!strcmp(str, "reset")) input = RESET;
     else if (!strcmp(str, "exit")) input = EXIT;
     else if (!strcmp(str, "help")) input = HELP;
